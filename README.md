@@ -4,8 +4,6 @@
 
 To begin the development of a new feature, create a new branch with a brief descriptive name (eg. ferro-sensor) beside the main branch and checkout that branch. Commit any related changes to the code to the feature branch (and not the main branch). When debugging, branch again off of the feature branch and use a similar name (eg. ferro-sensor-debug). Instead of overwriting your attempts, commit each iteration of your debugging process to the debugging branch. When you have successfully debugged the code, either merge the debugging branch back into the new branch, or checkout the feature branch, make the necessary changes, and commit there (if the changes are minor or if the debugged code has become too messy). When the feature is complete and debugged, merge the feature branch back into the main branch. Other branches can then be rebased if they need to utilize the recently merged updates.
 
-BUG1
-
 BUG2
 
 ## Notes from the top of the skeleton code
