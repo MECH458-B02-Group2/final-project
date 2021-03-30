@@ -138,7 +138,7 @@ void initialize(void) {
 
 	PolePosition = 0; // set the zero
 	
-	while((PINA & 0b10000000) != 0b10000000) {
+	while((PINA & 0b10000000) != 0b00000000) {
 		stepcw(1);
 	}
 	
