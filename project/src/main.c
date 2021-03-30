@@ -5,8 +5,6 @@
 
 // Main Start
 int main(int argc, char *argv[]){
-
-	PORTC=0x00;
 	
 	CLKPR = 0x80;
 	CLKPR = 0x01;		//  sets system clock to 8MHz
@@ -40,9 +38,11 @@ int main(int argc, char *argv[]){
 	// Initialize ports
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
 	DDRC = 0xFF;		// just use as a display
+	PORTC = 0x00; // Set display off to start
 	// Set PORTB (DC motor port) to output (B7 = PWM, B3 = IA, B2 = IB, B1 = EA, B0 = EB)
-	DDRB = 0xFF; // Initialize port A for output to motor driver
+	DDRB = 0xFF; // Initialize port B for output to motor driver
 	PORTB = 0x00; //Initialize all pins to be low
+	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
 
 	// Home Stepper Motor
 	initialize();
@@ -124,47 +124,30 @@ int main(int argc, char *argv[]){
 
 }
 
-/* Set up the External Interrupt 2 Vector */
-ISR(INT2_vect){
-	/* Toggle PORTC bit 2 */
-	STATE = 2;
-}
-
-ISR(INT3_vect){
-	/* Toggle PORTC bit 3 */
-	STATE = 3;
-}
-
-// If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
-// which usually indicates a bug), then the default action is to reset the device by jumping
-// to the reset vector. You can override this by supplying a function named BADISR_vect which
-// should be defined with ISR() as such. (The name BADISR_vect is actually an alias for __vector_default.
-// The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
-ISR(BADISR_vect)
-{
-	// user code here
-}
-
 //------------------------------------------------------------------------------------------------------//
-// STEPPER MOTOR SUBROUTINES -----------------------------------------------------------------------------------//
+// STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
-
 
 //Homing function
 void initialize(void) {
 
-	// Check to see if we enter this function
+	// DEBUG - Check to see if we enter this function
 	PORTC = 0b01010101;
 	mTimer(1000);
 
 	PolePosition = 0; // set the zero
 	
-	while((PINA & 0x80) != 0b10000000) {
+	while((PINA & 0b10000000) != 0b10000000) {
 		stepcw(1);
 	}
 	
+	// DEBUG - Check to see that we've passed the while loop above
+	PORTC = 0b11111111;
+	mTimer(1000);
+
 	PolePosition = 0;
 	CurPosition = 0;
+
 	
 	// NOTE: We do not have our actual position
 
@@ -245,9 +228,16 @@ void stepccw (int step) {
 		
 	} // for
 } // stepccw
+
 //------------------------------------------------------------------------------------------------------//
-// DC MOTOR SUBROUTINES ----------------------------------------------------------------------------//
+// DC MOTOR SUBROUTINES --------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
+
+void DC_Start(void) {
+	// Start running the motor
+	PORTB = 0x07; // Motor running forward
+	return;
+} // Motor start
 
 void DC_Stop(void) {
 
@@ -256,14 +246,8 @@ void DC_Stop(void) {
 	return;
 } // Motor stop
 
-void DC_Start(void) {
-	// Start running the motor
-	PORTB = 0x07; // Motor running forward
-	return;
-} // Motor start
-
 //------------------------------------------------------------------------------------------------------//
-// TIMERS ----------------- ----------------------------------------------------------------------------//
+// TIMERS ----------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
 void PWM(void) {
@@ -324,9 +308,6 @@ void enqueue(link **h, link **t, link **nL){
 	return;
 }/*enqueue*/
 
-
-
-
 /**************************************************************************************
 * DESC : Removes the link from the head of the list and assigns it to deQueuedLink
 * INPUT: The head and tail pointers, and a ptr 'deQueuedLink'
@@ -353,6 +334,17 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 // INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
+/* Set up the External Interrupt 2 Vector */
+ISR(INT2_vect){
+	/* Toggle PORTC bit 2 */
+	STATE = 2;
+}
+
+ISR(INT3_vect){
+	/* Toggle PORTC bit 3 */
+	STATE = 3;
+}
+
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
 	while ((PINE & 0b00010000) == 0);		// ACTIVE-LO sits in loop until button is released (masking button bit)
@@ -371,6 +363,15 @@ ISR(ADC_vect) {
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
 
+// If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
+// which usually indicates a bug), then the default action is to reset the device by jumping
+// to the reset vector. You can override this by supplying a function named BADISR_vect which
+// should be defined with ISR() as such. (The name BADISR_vect is actually an alias for __vector_default.
+// The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
+ISR(BADISR_vect)
+{
+	// user code here
+}
 
 
 
