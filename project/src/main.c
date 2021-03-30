@@ -176,6 +176,11 @@ ISR(BADISR_vect)
 
 //Homing function
 void initialize(void) {
+
+	// Check to see if we enter this function
+	PORTC = 0b01010101;
+	mTimer(1000);
+
 	PolePosition = 0; // set the zero
 	
 	while((PINA & 0x80) != 0b10000000) {
