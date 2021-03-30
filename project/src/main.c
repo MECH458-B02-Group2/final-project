@@ -43,6 +43,7 @@ int main(int argc, char *argv[]){
 	DDRB = 0xFF; // Initialize port B for output to motor driver
 	PORTB = 0x00; //Initialize all pins to be low
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
+	PORTA = 0b00000000;
 
 	// Home Stepper Motor
 	initialize();
