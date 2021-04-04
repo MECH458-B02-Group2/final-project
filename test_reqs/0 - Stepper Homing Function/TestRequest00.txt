@@ -1,0 +1,21 @@
+Connections:
+
+PortA = Stepper Motor As per Lab - PORTA.5 to E1, PORTA.4 to L1, PORTA.3 to L2, PORTA.2 to E2, PORTA.1 to L3, PORTA.0 to L4
+PortB = DC motor As per Lab - PORTB.3 to IA, PORTB.2 to IB, PORTB.1 to EA, and PORTB.0 to EB
+PortC = LCD/LEDs
+
+PA7 = HE Sensor (Active Lo)
+
+--------------------------  Above PORT assignments are to stream line Project Testing  -----------------------------------
+
+Instructions: Stepper Homing Function
+
+- Press RESET on MCU
+
+- LCD: Home Stepper
+- wait
+- bucket at black
+
+- LCD: TEST 0 COMPLETE
+- wait 2 seconds
+- clear LCD

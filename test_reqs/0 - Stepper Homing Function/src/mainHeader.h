@@ -37,7 +37,7 @@ typedef struct link{
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
-void initialize(void);
+void step_home(void);
 void stepcw(int step);
 void stepccw(int step);
 
