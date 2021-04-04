@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 	
 	// Declarations
 	int reflect_val;
-	
+
 	// Home Stepper Motor
 	step_home();
 	

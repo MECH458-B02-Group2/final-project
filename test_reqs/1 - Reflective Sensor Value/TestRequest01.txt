@@ -1,0 +1,79 @@
+Connections:
+
+PortA = Stepper Motor As per Lab - PORTA.5 to E1, PORTA.4 to L1, PORTA.3 to L2, PORTA.2 to E2, PORTA.1 to L3, PORTA.0 to L4
+PortB = DC motor As per Lab - PORTB.3 to IA, PORTB.2 to IB, PORTB.1 to EA, and PORTB.0 to EB
+PortC = LCD/LEDs
+
+PA7 = HE Sensor 
+PD2 = OR Sensor (Active Hi)
+
+PE4 = Pause/Resume Button (Active Lo)
+
+PF1 = RL Sensor (ADC1)
+
+--------------------------  Above PORT assignments are to stream line Project Testing  -----------------------------------
+
+Instructions: Reflective Sensor Value
+
+- Press RESET on MCU
+
+
+
+
+
+
+TEST#1 - Homing Stepper Motor 
+	- LCD: Home Stepper
+	- wait 
+	- bucket at black
+	
+	- LCD: TEST 1 COMPLETE 
+	- wait 2 Second 
+	- clear LCD
+	
+TEST#2 - Accel / Deaccel Stepper Motor 
+
+	- LCD: MOVE 90 CW
+	- Stepper motor moves 90 deg CW with accel / deaccel
+	- wait 
+	
+	- LCD: MOVE 180 CW 
+	- Stepper Stepp motor moves 180 CW with accel / deaccel
+	- wait
+	
+	- LCD: MOVE 90 CCW
+	- stepp motor moves 90 CCW with accel / deaccel 
+	- wait
+	
+	- LCD: MOVE 180CCW
+	- stepper motor moves 180CCW with accel / deaccel
+	- wait
+	
+	LCD: TEST 2 COMPLETE
+	- wait 2 seconds 
+	- clear LCD
+	
+TEST#3 - OR GATE triggers
+
+	- DC motor turns on 
+** place a part on the belt **
+	- OR gate will trip when item received 
+	- DC MOTOR OFF 
+	
+	- LCD: OR Tripped
+
+TEST#4 - EX GATE triggers and Linked List display
+	- EX gate will trip when item received
+	- DC Motor OFF
+	- LCD: EX Tripped
+	- wait 2 seconds 
+	- LCD: Length | Value   
+		      1       4
+	
+	
+TEST#5 - Pause / Unpause 
+	- toggling Push Button will toggle DC Motor ON/OFF 
+	  and display to NORMAL/PAUSE 
+	  
+	  
+END OF TEST
