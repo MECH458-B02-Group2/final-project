@@ -13,6 +13,11 @@ int main(int argc, char *argv[]){
 	TCCR1B |= _BV(CS11); // Set the timer 1 prescaler to 8 --> f=1MHz
 	TCCR0B |= _BV(CS01); // Set the timer prescalar to 8 --> 3.9 kHz (8MHz/(N*256)
 	
+	//Initialize LCD module
+	InitLCD(LS_BLINK|LS_ULINE);
+	//Clear the screen
+	LCDClear();
+
 	STATE = 0;
 
 	cli();		// Disables all interrupts
@@ -133,6 +138,8 @@ int main(int argc, char *argv[]){
 
 //Homing function
 void step_home(void) {
+
+	LCDWriteString("Homing stepper... ");
 
 	// DEBUG - Check to see if we enter this function
 	PORTC = 0b01010101;
