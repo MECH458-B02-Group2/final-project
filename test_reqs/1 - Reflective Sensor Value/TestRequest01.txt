@@ -1,0 +1,30 @@
+Connections:
+
+PortA = Stepper Motor As per Lab - PORTA.5 to E1, PORTA.4 to L1, PORTA.3 to L2, PORTA.2 to E2, PORTA.1 to L3, PORTA.0 to L4
+PortB = DC motor As per Lab - PORTB.3 to IA, PORTB.2 to IB, PORTB.1 to EA, and PORTB.0 to EB
+PortC = LCD/LEDs
+
+PA7 = HE Sensor 
+PD2 = OR Sensor (Active Hi)
+
+PE4 = Pause/Resume Button (Active Lo)
+
+PF1 = RL Sensor (ADC1)
+
+--------------------------  Above PORT assignments are to stream line Project Testing  -----------------------------------
+
+Instructions: Reflective Sensor Value
+
+- Press RESET on MCU
+	- Stepper homes
+	- DC Motor starts
+	- Put part on belt
+	- Let relfective sensor scan part
+	- wait
+	- DC Motor turns OFF
+	- LCD Displays highest ADC conversion from part being scanned
+
+	VALUE DISPLAYED CORRECT FOR THE MATERIAL? 
+	PASS/FAIL
+
+	END OF TEST
