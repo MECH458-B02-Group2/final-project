@@ -2,6 +2,8 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include "mainHeader.h"
+#include "lcd.h"
+
 
 // Main Start
 int main(int argc, char *argv[]){
@@ -11,6 +13,11 @@ int main(int argc, char *argv[]){
 	TCCR1B |= _BV(CS11); // Set the timer 1 prescaler to 8 --> f=1MHz
 	TCCR0B |= _BV(CS01); // Set the timer prescalar to 8 --> 3.9 kHz (8MHz/(N*256)
 	
+	//Initialize LCD module
+	InitLCD(LS_BLINK|LS_ULINE);
+	//Clear the screen
+	LCDClear();
+
 	STATE = 0;
 
 	cli();		// Disables all interrupts
@@ -46,7 +53,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 
 	// Home Stepper Motor
-	initialize();
+	step_home();
 	
 	// Enable PWM for motor pin
 	PWM(); // Initialize PWM
@@ -130,27 +137,25 @@ int main(int argc, char *argv[]){
 //------------------------------------------------------------------------------------------------------//
 
 //Homing function
-void initialize(void) {
+void step_home(void) {
 
-	// DEBUG - Check to see if we enter this function
-	PORTC = 0b01010101;
-	mTimer(1000);
+	LCDWriteString("Home stepper");
 
 	PolePosition = 0; // set the zero
 	
 	while((PINA & 0b10000000) != 0b00000000) {
 		stepcw(1);
 	}
-	
-	// DEBUG - Check to see that we've passed the while loop above
-	PORTC = 0b11111111;
-	mTimer(1000);
 
 	PolePosition = 0;
 	CurPosition = 0;
 
-	
-	// NOTE: We do not have our actual position
+	LCDClear();
+	LCDWriteString("TEST 0 COMPLETE");
+
+	mTimer(2000);
+
+	LCDClear();
 
 } // Homing Function
 

@@ -139,27 +139,23 @@ int main(int argc, char *argv[]){
 //Homing function
 void step_home(void) {
 
-	LCDWriteString("Homing stepper... ");
-
-	// DEBUG - Check to see if we enter this function
-	PORTC = 0b01010101;
-	mTimer(1000);
+	LCDWriteString("Home stepper");
 
 	PolePosition = 0; // set the zero
 	
 	while((PINA & 0b10000000) != 0b00000000) {
 		stepcw(1);
 	}
-	
-	// DEBUG - Check to see that we've passed the while loop above
-	PORTC = 0b11111111;
-	mTimer(1000);
 
 	PolePosition = 0;
 	CurPosition = 0;
 
-	
-	// NOTE: We do not have our actual position
+	LCDClear();
+	LCDWriteString("TEST 0 COMPLETE");
+
+	mTimer(2000);
+
+	LCDClear();
 
 } // Homing Function
 
