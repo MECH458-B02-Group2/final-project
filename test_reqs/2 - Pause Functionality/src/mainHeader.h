@@ -13,21 +13,6 @@ int const delay = 20;
 // DC Motor
 int const Speed = 0x50;
 
-// Reflective Sensor Values
-/*  Aluminum - < 255
-	Steel    - 400 - 700
-	White    - 870 - 935
-	Black    - 936 - 980 */
-int const ADC_min = 5;
-int const Al_low = 0;
-int const Al_high = 255;
-int const St_low = 400;
-int const St_high = 700;
-int const Wh_low = 870;
-int const Wh_high = 935;
-int const Bl_low = 936;
-int const Bl_high = 980;
-
 // Other
 volatile unsigned char ADC_result;
 volatile unsigned int ADC_result_flag;

@@ -4,6 +4,7 @@
 #include "mainHeader.h"
 #include "lcd.h"
 
+
 // Main Start
 int main(int argc, char *argv[]){
 	
@@ -24,13 +25,13 @@ int main(int argc, char *argv[]){
 	// See page 112 - EIFR External Interrupt Flags...notice how they reset on their own in 'C'...not in assembly
 	// EIMSK |= 0x0C; // == 0b00000100 | 0b00000010 // THIS LINE WAS IN THE EXAMPLE CODE BUT WE REPLACED IT WITH THE BELOW CODE
 	// EIMSK |= (_BV(INT1)); // enable INT1
-	EIMSK |= (_BV(INT2)); // enable INT2
+	// EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT4)); // enable INT4
 	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
 	// Set Interrupt sense control to catch a rising edge
-	EICRA |= _BV(ISC21); // | _BV(ISC20); Falling edge interrupt - active low
-	// EICRA |= _BV(ISC31) | _BV(ISC30);
-	EICRA |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
+	//EICRA |= _BV(ISC21) | _BV(ISC20);
+	//EICRA |= _BV(ISC31) | _BV(ISC30);
+	EICRB |= _BV(ISC41) | _BV(ISC40); // Pause button interrupt (INT4, PE4) triggers on rising edge
 
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
 	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
@@ -49,10 +50,7 @@ int main(int argc, char *argv[]){
 	PORTB = 0x00; //Initialize all pins to be low
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
 	PORTA = 0b00000000;
-	
-	// Declarations
-	int reflect_val;
-	
+
 	// Home Stepper Motor
 	step_home();
 	
@@ -95,7 +93,6 @@ int main(int argc, char *argv[]){
 	}//switch STATE
 	
 	MAGNETIC_STAGE:
-	// When OI (First optical sensor) Interrupt is triggered come here
 	// Do whatever is necessary HERE
 	PORTC = 0x01; // Just output pretty lights know you made it here
 	//Reset the state variable
@@ -103,46 +100,14 @@ int main(int argc, char *argv[]){
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
-	// When OR (Second optical sensor) interrupt is triggered come here
-	// Read ADC values, while the value is lower than the previous value overwrite the previous value
-	reflect_val = 0; // Temporary overwrite variable
-	// See if sensor is still active low
-	while((PIND & 0b00000001) == 0b00000001) { 
-		ADCSRA |= _BV(ADSC); // Take another ADC reading
-		if (ADC_result>reflect_val) {
-			reflect_val = ADC_result;
-		} // Overwrite previous value if bigger
-	}
-
-	// Determine which type of material
-	if(Al_low <= reflect_val && reflect_val <= Al_high) {
-		//add to link for aluminum
-	} else if(St_low <= reflect_val && reflect_val <= St_high) {
-		//add to link as steel
-	} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
-		//add to link as white
-	} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
-		// add to link as black
-	}
-	
-	// FOR TEST 1 - Reflective sensor
-	mTimer(500);
-	DC_Stop();
-	
-	// Display on LCD
-	LCDClear();
-	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(2000);
-
+	// Do whatever is necessary HERE
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 	
 	BUCKET_STAGE:
-	// When EX (End optical sensor) Sensor is triggered come here
-	// If the bucket is not in the correct position, rotate to the correct position
-	// Need to use the correct acceleration profile of the stepper to do this
+	// Do whatever is necessary HERE
 	PORTC = 0x08;
 	//Reset the state variable
 	STATE = 0;
@@ -195,6 +160,9 @@ void step_home(void) {
 
 	PolePosition = 0;
 	CurPosition = 0;
+
+	// TEST0
+	mTimer(2000);
 
 } // Homing Function
 
@@ -379,30 +347,16 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 // INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------------//
-// ISR SUBROUTINES -----------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
-
-/* PD0 = OI Sensor (Active Lo) */
-//ISR(INT0_vect){
-//	STATE = 1;
-//} // Ferro optical sensor
-
-/*  PD1 = HE Sensor (Active Lo) or PORTA.7
-	Most likely just using port A.7 for this
-	Hall effect ISR */
-
-/* PD2 = OR Sensor (Active Hi) */
+/* Set up the External Interrupt 2 Vector */
 ISR(INT2_vect){
+	/* Toggle PORTC bit 2 */
 	STATE = 2;
-	// Want to go to do ISR 
-} // Reflective optical sensor
+}
 
-/* PD3 = EX Sensor (Active Lo) */
-//ISR(INT3_vect){
-//	STATE = 3;
-	// Want to check if in the correct position for the bucket
-//} // End optical sensor
+ISR(INT3_vect){
+	/* Toggle PORTC bit 3 */
+	STATE = 3;
+}
 
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
@@ -421,11 +375,6 @@ ISR(ADC_vect) {
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
 
-/* PE5 = RampDown (Active Lo) */
-//ISR(INT5_vect){
-//	STATE = 5;
-//} 
-
 // If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
 // which usually indicates a bug), then the default action is to reset the device by jumping
 // to the reset vector. You can override this by supplying a function named BADISR_vect which
@@ -439,6 +388,7 @@ ISR(BADISR_vect)
 	mTimer(2000);
 	// user code here
 }
+
 
 
 
