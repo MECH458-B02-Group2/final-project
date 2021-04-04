@@ -17,6 +17,7 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	//Clear the screen
 	LCDClear();
+	LCDWriteString("NORMAL"); // Output "NORMAL" to LCD for Test 2 - Pause functionality
 
 	STATE = 0;
 
@@ -32,7 +33,7 @@ int main(int argc, char *argv[]){
 	// Set Interrupt sense control to catch a rising edge
 	//EICRA |= _BV(ISC21) | _BV(ISC20);
 	//EICRA |= _BV(ISC31) | _BV(ISC30);
-	EICRA |= _BV(ISC41) | _BV(ISC40);
+	EICRB |= _BV(ISC41) | _BV(ISC40); // Pause button interrupt (INT4, PE4) triggers on rising edge
 
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
 	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
@@ -57,8 +58,15 @@ int main(int argc, char *argv[]){
 	
 	// Enable PWM for motor pin
 	PWM(); // Initialize PWM
-	// Enable all interrupts
 	
+	// Debugging
+	LCDClear();
+	LCDWriteString("Checkpoint");
+	mTimer(2000);
+	LCDClear();
+	LCDWriteString("NORMAL");
+	
+	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 	
 	// Start running the motor
@@ -87,7 +95,7 @@ int main(int argc, char *argv[]){
 		goto PAUSE_STAGE;
 		break;
 		case (5) :
-		goto END;
+		goto END_STAGE;
 		default :
 		goto POLLING_STAGE;
 	}//switch STATE
@@ -112,25 +120,36 @@ int main(int argc, char *argv[]){
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
-	
+
+	// PAUSE STAGE -----------------------------------------------------------------------------------------//
+	// Pauses the DC motor when the pause button (INT4, PE4) is pressed until the pause button is pressed again
 	PAUSE_STAGE:
 	
-	PORTC = 0b00001000;
-	DC_Stop();
-	while(STATE == 4);
-	DC_Start();
+	LCDWriteString("PAUSE"); // Output "PAUSE" to LCD
+	DC_Stop(); // Stop the DC Motor
+	while(STATE == 4); // Wait until pause button is pressed again
+	
+	LCDWriteString("NORMAL"); // Output "NORMAL" to LCD
+	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
 	goto POLLING_STAGE;
+	// end PAUSE STAGE
+	//------------------------------------------------------------------------------------------------------//
 	
-	END:
+	// END STAGE -------------------------------------------------------------------------------------------//
+	// [Description]
+	END_STAGE:
+
 	// The closing STATE ... how would you get here?
 	PORTC = 0xF0;	// Indicates this state is active
 	// Stop everything here...'MAKE SAFE'
 	// cli();
 	return(0);
+	// end END STAGE
+	//------------------------------------------------------------------------------------------------------//
 
-}
+} // end main()
 
 //------------------------------------------------------------------------------------------------------//
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
@@ -138,8 +157,6 @@ int main(int argc, char *argv[]){
 
 //Homing function
 void step_home(void) {
-
-	LCDWriteString("Home stepper");
 
 	PolePosition = 0; // set the zero
 	
@@ -150,12 +167,7 @@ void step_home(void) {
 	PolePosition = 0;
 	CurPosition = 0;
 
-	LCDClear();
-	LCDWriteString("TEST 0 COMPLETE");
-
 	mTimer(2000);
-
-	LCDClear();
 
 } // Homing Function
 
