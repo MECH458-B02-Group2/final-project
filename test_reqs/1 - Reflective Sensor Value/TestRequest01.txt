@@ -16,64 +16,15 @@ PF1 = RL Sensor (ADC1)
 Instructions: Reflective Sensor Value
 
 - Press RESET on MCU
-
-
-
-
-
-
-TEST#1 - Homing Stepper Motor 
-	- LCD: Home Stepper
-	- wait 
-	- bucket at black
-	
-	- LCD: TEST 1 COMPLETE 
-	- wait 2 Second 
-	- clear LCD
-	
-TEST#2 - Accel / Deaccel Stepper Motor 
-
-	- LCD: MOVE 90 CW
-	- Stepper motor moves 90 deg CW with accel / deaccel
-	- wait 
-	
-	- LCD: MOVE 180 CW 
-	- Stepper Stepp motor moves 180 CW with accel / deaccel
+	- Stepper homes
+	- DC Motor starts
+	- Put part on belt
+	- Let relfective sensor scan part
 	- wait
-	
-	- LCD: MOVE 90 CCW
-	- stepp motor moves 90 CCW with accel / deaccel 
-	- wait
-	
-	- LCD: MOVE 180CCW
-	- stepper motor moves 180CCW with accel / deaccel
-	- wait
-	
-	LCD: TEST 2 COMPLETE
-	- wait 2 seconds 
-	- clear LCD
-	
-TEST#3 - OR GATE triggers
+	- DC Motor turns OFF
+	- LCD Displays highest ADC conversion from part being scanned
 
-	- DC motor turns on 
-** place a part on the belt **
-	- OR gate will trip when item received 
-	- DC MOTOR OFF 
-	
-	- LCD: OR Tripped
+	VALUE DISPLAYED CORRECT FOR THE MATERIAL? 
+	PASS/FAIL
 
-TEST#4 - EX GATE triggers and Linked List display
-	- EX gate will trip when item received
-	- DC Motor OFF
-	- LCD: EX Tripped
-	- wait 2 seconds 
-	- LCD: Length | Value   
-		      1       4
-	
-	
-TEST#5 - Pause / Unpause 
-	- toggling Push Button will toggle DC Motor ON/OFF 
-	  and display to NORMAL/PAUSE 
-	  
-	  
-END OF TEST
+	END OF TEST
