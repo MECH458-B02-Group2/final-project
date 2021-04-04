@@ -8,6 +8,7 @@
 // Steel    - 400 - 700
 // White    - 870 - 935
 // Black    - 936 - 980
+int const ADC_min = 5;
 int const Al_low = 0;
 int const Al_high = 255;
 int const St_low = 400;
@@ -110,7 +111,7 @@ int main(int argc, char *argv[]){
 	// When OR (Second optical sensor) inerrupt is triggered come here
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	int tempref = 0; // Temporary overwrite variable
-	while(ADC_result>0) { 
+	while(ADC_result>ADC_min) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 		if (ADC_result>tempref) {
 			int tempref = 0;
@@ -119,9 +120,6 @@ int main(int argc, char *argv[]){
 
 	// Store data in linked queue 
 	// head.e->reflect;
-
-	// Do whatever is necessary HERE
-	
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
 	STATE = 0;
@@ -154,18 +152,42 @@ int main(int argc, char *argv[]){
 	// cli();
 	return(0);
 
-}
+} // END MAIN
 
-/* Set up the External Interrupt 2 Vector */
+//------------------------------------------------------------------------------------------------------//
+// ISR SUBROUTINES -----------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------//
+
+/* PD0 = OI Sensor (Active Lo) */
+ISR(INT0_vect){
+	STATE = 1;
+} // Ferro optical sensor
+
+/* PD1 = HE Sensor (Active Lo) or PORTA.7 */
+	// STATE = 1;
+	// Most likely just using port A.7 for this
+	// Hall effect ISR
+
+/* PD2 = OR Sensor (Active Hi) */
 ISR(INT2_vect){
-	/* Toggle PORTC bit 2 */
 	STATE = 2;
-}
+	// Want to go to do ISR 
+} // Reflective optical sensor
 
+/* PD3 = EX Sensor (Active Lo) */
 ISR(INT3_vect){
-	/* Toggle PORTC bit 3 */
 	STATE = 3;
-}
+	// Want to check if in the correct position for the bucket
+} // End optical sensor
+
+/* PE4 = Pause/Resume Button (Active Lo) */
+	// STATE = 4;
+	// Malaki is working on this, check if pause is active, if not, activate it using global? 
+
+/* PE5 = RampDown (Active Lo) */
+ISR(INT5_vect){
+	STATE = 5;
+} 
 
 // If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
 // which usually indicates a bug), then the default action is to reset the device by jumping
