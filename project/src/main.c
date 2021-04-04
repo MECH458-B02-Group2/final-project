@@ -111,10 +111,11 @@ int main(int argc, char *argv[]){
 	// When OR (Second optical sensor) inerrupt is triggered come here
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	int tempref = 0; // Temporary overwrite variable
-	while(ADC_result>ADC_min) { 
+	// See if sensor is still active low
+	while((PIND & 0b00000001) == 0b00000001) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 		if (ADC_result>tempref) {
-			int tempref = 0;
+			int tempref = ADC_result;
 		} // Overwrite previous value if bigger
 	}
 
@@ -153,51 +154,6 @@ int main(int argc, char *argv[]){
 	return(0);
 
 } // END MAIN
-
-//------------------------------------------------------------------------------------------------------//
-// ISR SUBROUTINES -----------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
-
-/* PD0 = OI Sensor (Active Lo) */
-ISR(INT0_vect){
-	STATE = 1;
-} // Ferro optical sensor
-
-/* PD1 = HE Sensor (Active Lo) or PORTA.7 */
-	// STATE = 1;
-	// Most likely just using port A.7 for this
-	// Hall effect ISR
-
-/* PD2 = OR Sensor (Active Hi) */
-ISR(INT2_vect){
-	STATE = 2;
-	// Want to go to do ISR 
-} // Reflective optical sensor
-
-/* PD3 = EX Sensor (Active Lo) */
-ISR(INT3_vect){
-	STATE = 3;
-	// Want to check if in the correct position for the bucket
-} // End optical sensor
-
-/* PE4 = Pause/Resume Button (Active Lo) */
-	// STATE = 4;
-	// Malaki is working on this, check if pause is active, if not, activate it using global? 
-
-/* PE5 = RampDown (Active Lo) */
-ISR(INT5_vect){
-	STATE = 5;
-} 
-
-// If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
-// which usually indicates a bug), then the default action is to reset the device by jumping
-// to the reset vector. You can override this by supplying a function named BADISR_vect which
-// should be defined with ISR() as such. (The name BADISR_vect is actually an alias for __vector_default.
-// The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
-ISR(BADISR_vect)
-{
-	// user code here
-}
 
 //------------------------------------------------------------------------------------------------------//
 // STEPPER MOTOR SUBROUTINES -----------------------------------------------------------------------------------//
@@ -407,6 +363,32 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 // INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
+//------------------------------------------------------------------------------------------------------//
+// ISR SUBROUTINES -----------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------//
+
+/* PD0 = OI Sensor (Active Lo) */
+ISR(INT0_vect){
+	STATE = 1;
+} // Ferro optical sensor
+
+/* PD1 = HE Sensor (Active Lo) or PORTA.7 */
+	// STATE = 1;
+	// Most likely just using port A.7 for this
+	// Hall effect ISR
+
+/* PD2 = OR Sensor (Active Hi) */
+ISR(INT2_vect){
+	STATE = 2;
+	// Want to go to do ISR 
+} // Reflective optical sensor
+
+/* PD3 = EX Sensor (Active Lo) */
+ISR(INT3_vect){
+	STATE = 3;
+	// Want to check if in the correct position for the bucket
+} // End optical sensor
+
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
 	while ((PINE & 0b00010000) == 0);		// ACTIVE-LO sits in loop until button is released (masking button bit)
@@ -425,7 +407,20 @@ ISR(ADC_vect) {
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
 
+/* PE5 = RampDown (Active Lo) */
+ISR(INT5_vect){
+	STATE = 5;
+} 
 
+// If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
+// which usually indicates a bug), then the default action is to reset the device by jumping
+// to the reset vector. You can override this by supplying a function named BADISR_vect which
+// should be defined with ISR() as such. (The name BADISR_vect is actually an alias for __vector_default.
+// The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
+ISR(BADISR_vect)
+{
+	// user code here
+}
 
 
 
