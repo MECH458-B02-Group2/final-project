@@ -1,0 +1,21 @@
+Connections:
+
+PortB = DC motor As per Lab - PORTB.3 to IA, PORTB.2 to IB, PORTB.1 to EA, and PORTB.0 to EB
+PortC = LCD/LEDs
+
+PE4 = Pause/Resume Button (Active Lo)
+
+--------------------------  Above PORT assignments are to stream line Project Testing  -----------------------------------
+
+Instructions: Pause Functionality
+
+  - Press RESET on MCU
+
+  - LCD: ACTIVE
+  - Stepper homes
+  - DC Motor ON
+  
+  - toggling Pause Button (INT4, PE4) will toggle DC Motor ON/OFF 
+    and display to ACTIVE/PAUSE
+
+  END OF TEST
