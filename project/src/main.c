@@ -107,7 +107,6 @@ int main(int argc, char *argv[]){
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
-<<<<<<< HEAD
 	// When OR (Second optical sensor) inerrupt is triggered come here
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	int tempref = 0; // Temporary overwrite variable
@@ -121,10 +120,8 @@ int main(int argc, char *argv[]){
 	// Store data in linked queue 
 	// head.e->reflect;
 
-=======
 	// Do whatever is necessary HERE
 	
->>>>>>> c361dedbcb1d539e75c045c4c6813aebee11dcf2
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
 	STATE = 0;
