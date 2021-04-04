@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 	
 	// Declarations
 	int reflect_val;
-
+	
 	// Home Stepper Motor
 	step_home();
 	
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
-	// When OR (Second optical sensor) inerrupt is triggered come here
+	// When OR (Second optical sensor) interrupt is triggered come here
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	reflect_val = 0; // Temporary overwrite variable
 	// See if sensor is still active low
@@ -124,8 +124,13 @@ int main(int argc, char *argv[]){
 	} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
 		// add to link as black
 	}
-
+	
+	// FOR TEST 1 - Reflective sensor
+	mTimer(500);
+	DC_Stop();
+	
 	// Display on LCD
+	LCDClear();
 	LCDWriteIntXY(0,1,reflect_val,3);
 	mTimer(2000);
 
@@ -170,27 +175,14 @@ int main(int argc, char *argv[]){
 //Homing function
 void step_home(void) {
 
-	LCDWriteString("Homing stepper... ");
-
-	// DEBUG - Check to see if we enter this function
-	PORTC = 0b01010101;
-	mTimer(1000);
-
 	PolePosition = 0; // set the zero
 	
 	while((PINA & 0b10000000) != 0b00000000) {
 		stepcw(1);
 	}
-	
-	// DEBUG - Check to see that we've passed the while loop above
-	PORTC = 0b11111111;
-	mTimer(1000);
 
 	PolePosition = 0;
 	CurPosition = 0;
-
-	
-	// NOTE: We do not have our actual position
 
 } // Homing Function
 
