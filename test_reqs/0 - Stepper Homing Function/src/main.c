@@ -2,23 +2,6 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include "mainHeader.h"
-#include "lcd.h"
-
-
-// Reflective Sensor Values
-// Aluminum - < 255
-// Steel    - 400 - 700
-// White    - 870 - 935
-// Black    - 936 - 980
-int const ADC_min = 5;
-int const Al_low = 0;
-int const Al_high = 255;
-int const St_low = 400;
-int const St_high = 700;
-int const Wh_low = 870;
-int const Wh_high = 935;
-int const Bl_low = 936;
-int const Bl_high = 980;
 
 // Main Start
 int main(int argc, char *argv[]){
@@ -28,11 +11,6 @@ int main(int argc, char *argv[]){
 	TCCR1B |= _BV(CS11); // Set the timer 1 prescaler to 8 --> f=1MHz
 	TCCR0B |= _BV(CS01); // Set the timer prescalar to 8 --> 3.9 kHz (8MHz/(N*256)
 	
-	//Initialize LCD module
-	InitLCD(LS_BLINK|LS_ULINE);
-	//Clear the screen
-	LCDClear();
-
 	STATE = 0;
 
 	cli();		// Disables all interrupts
@@ -68,7 +46,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 
 	// Home Stepper Motor
-	step_home();
+	initialize();
 	
 	// Enable PWM for motor pin
 	PWM(); // Initialize PWM
@@ -108,7 +86,6 @@ int main(int argc, char *argv[]){
 	}//switch STATE
 	
 	MAGNETIC_STAGE:
-	// When OI (First optical sensor) Interrupt is triggered come here
 	// Do whatever is necessary HERE
 	PORTC = 0x01; // Just output pretty lights know you made it here
 	//Reset the state variable
@@ -116,36 +93,21 @@ int main(int argc, char *argv[]){
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
-	// When OR (Second optical sensor) inerrupt is triggered come here
-	// Read ADC values, while the value is lower than the previous value overwrite the previous value
-	int tempref = 0; // Temporary overwrite variable
-	// See if sensor is still active low
-	while((PIND & 0b00000001) == 0b00000001) { 
-		ADCSRA |= _BV(ADSC); // Take another ADC reading
-		if (ADC_result>tempref) {
-			int tempref = ADC_result;
-		} // Overwrite previous value if bigger
-	}
-
-	// Store data in linked queue 
-	// head.e->reflect;
+	// Do whatever is necessary HERE
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 	
 	BUCKET_STAGE:
-	// When EX (End optical sensor) Sensor is triggered come here
-	// If the bucket is not in the correct position, rotate to the correct position
-	// Need to use the correct acceleration profile of the stepper to do this
+	// Do whatever is necessary HERE
 	PORTC = 0x08;
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 	
 	PAUSE_STAGE:
-	// While paused, output the amount of parts that have been sorted thus far
-	// Use the LCD display
+	
 	PORTC = 0b00001000;
 	DC_Stop();
 	while(STATE == 4);
@@ -161,16 +123,14 @@ int main(int argc, char *argv[]){
 	// cli();
 	return(0);
 
-} // END MAIN
+}
 
 //------------------------------------------------------------------------------------------------------//
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
 //Homing function
-void step_home(void) {
-
-	LCDWriteString("Homing stepper... ");
+void initialize(void) {
 
 	// DEBUG - Check to see if we enter this function
 	PORTC = 0b01010101;
@@ -375,31 +335,16 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 // INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------------//
-// ISR SUBROUTINES -----------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
-
-/* PD0 = OI Sensor (Active Lo) */
-ISR(INT0_vect){
-	STATE = 1;
-} // Ferro optical sensor
-
-/* PD1 = HE Sensor (Active Lo) or PORTA.7 */
-	// STATE = 1;
-	// Most likely just using port A.7 for this
-	// Hall effect ISR
-
-/* PD2 = OR Sensor (Active Hi) */
+/* Set up the External Interrupt 2 Vector */
 ISR(INT2_vect){
+	/* Toggle PORTC bit 2 */
 	STATE = 2;
-	// Want to go to do ISR 
-} // Reflective optical sensor
+}
 
-/* PD3 = EX Sensor (Active Lo) */
 ISR(INT3_vect){
+	/* Toggle PORTC bit 3 */
 	STATE = 3;
-	// Want to check if in the correct position for the bucket
-} // End optical sensor
+}
 
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
@@ -419,11 +364,6 @@ ISR(ADC_vect) {
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
 
-/* PE5 = RampDown (Active Lo) */
-ISR(INT5_vect){
-	STATE = 5;
-} 
-
 // If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
 // which usually indicates a bug), then the default action is to reset the device by jumping
 // to the reset vector. You can override this by supplying a function named BADISR_vect which
@@ -433,6 +373,7 @@ ISR(BADISR_vect)
 {
 	// user code here
 }
+
 
 
 
