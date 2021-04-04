@@ -3,6 +3,20 @@
 #include <stdlib.h>
 #include "mainHeader.h"
 
+// Reflective Sensor Values
+// Aluminum - < 255
+// Steel    - 400 - 700
+// White    - 870 - 935
+// Black    - 936 - 980
+int const Al_low = 0;
+int const Al_high = 255;
+int const St_low = 400;
+int const St_high = 700;
+int const Wh_low = 870;
+int const Wh_high = 935;
+int const Bl_low = 936;
+int const Bl_high = 980;
+
 // Main Start
 int main(int argc, char *argv[]){
 
@@ -85,6 +99,7 @@ int main(int argc, char *argv[]){
 	}//switch STATE
 	
 	MAGNETIC_STAGE:
+	// When OI (First optical sensor) Interrupt is triggered come here
 	// Do whatever is necessary HERE
 	PORTC = 0x01; // Just output pretty lights know you made it here
 	//Reset the state variable
@@ -92,21 +107,41 @@ int main(int argc, char *argv[]){
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
+<<<<<<< HEAD
+	// When OR (Second optical sensor) inerrupt is triggered come here
+	// Read ADC values, while the value is lower than the previous value overwrite the previous value
+	int tempref = 0; // Temporary overwrite variable
+	while(ADC_result>0) { 
+		ADCSRA |= _BV(ADSC); // Take another ADC reading
+		if (ADC_result>tempref) {
+			int tempref = 0;
+		} // Overwrite previous value if bigger
+	}
+
+	// Store data in linked queue 
+	// head.e->reflect;
+
+=======
 	// Do whatever is necessary HERE
+	
+>>>>>>> c361dedbcb1d539e75c045c4c6813aebee11dcf2
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 	
 	BUCKET_STAGE:
-	// Do whatever is necessary HERE
+	// When EX (End optical sensor) Sensor is triggered come here
+	// If the bucket is not in the correct position, rotate to the correct position
+	// Need to use the correct acceleration profile of the stepper to do this
 	PORTC = 0x08;
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 	
 	PAUSE_STAGE:
-	
+	// While paused, output the amount of parts that have been sorted thus far
+	// Use the LCD display
 	PORTC = 0b00001000;
 	DC_Stop();
 	while(STATE == 4);
