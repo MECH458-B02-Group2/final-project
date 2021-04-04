@@ -1,6 +1,8 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include "mainHeader.h"
+#include "lcd.h"
+
 
 // Global Variable---------
 // State Machine
@@ -176,6 +178,9 @@ ISR(BADISR_vect)
 
 //Homing function
 void initialize(void) {
+
+	LCDWriteString("Initializing... ");
+
 	PolePosition = 0; // set the zero
 	
 	while((PINA & 0x80) != 0b10000000) {
