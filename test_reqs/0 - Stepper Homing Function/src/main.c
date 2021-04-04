@@ -2,8 +2,6 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include "mainHeader.h"
-#include "lcd.h"
-
 
 // Main Start
 int main(int argc, char *argv[]){
@@ -48,7 +46,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 
 	// Home Stepper Motor
-	step_home();
+	initialize();
 	
 	// Enable PWM for motor pin
 	PWM(); // Initialize PWM
@@ -132,7 +130,7 @@ int main(int argc, char *argv[]){
 //------------------------------------------------------------------------------------------------------//
 
 //Homing function
-void step_home(void) {
+void initialize(void) {
 
 	// DEBUG - Check to see if we enter this function
 	PORTC = 0b01010101;
