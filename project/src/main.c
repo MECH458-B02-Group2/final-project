@@ -17,9 +17,7 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	//Clear the screen
 	LCDClear();
-	LCDWriteString("NORMAL"); // Output "NORMAL" to LCD for Test 2 - Pause functionality
-
-	STATE = 0;
+	LCDWriteString("ACTIVE");
 
 	cli();		// Disables all interrupts
 	
@@ -28,7 +26,7 @@ int main(int argc, char *argv[]){
 	// EIMSK |= 0x0C; // == 0b00000100 | 0b00000010 // THIS LINE WAS IN THE EXAMPLE CODE BUT WE REPLACED IT WITH THE BELOW CODE
 	// EIMSK |= (_BV(INT1)); // enable INT1
 	// EIMSK |= (_BV(INT2)); // enable INT2
-	EIMSK |= (_BV(INT4)); // enable INT2
+	EIMSK |= (_BV(INT4)); // enable INT4
 	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
 	// Set Interrupt sense control to catch a rising edge
 	//EICRA |= _BV(ISC21) | _BV(ISC20);
@@ -59,24 +57,18 @@ int main(int argc, char *argv[]){
 	// Enable PWM for motor pin
 	PWM(); // Initialize PWM
 	
-	// Debugging
-	LCDClear();
-	LCDWriteString("Checkpoint");
-	mTimer(2000);
-	LCDClear();
-	LCDWriteString("NORMAL");
-	
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 	
 	// Start running the motor
 	PORTB = 0x07; // Motor running forward
+
+	STATE = 0;
 	
 	goto POLLING_STAGE;
 	
 	// POLLING STATE
 	POLLING_STAGE:
-	PORTC |= 0xF0;	// Indicates this state is active
 	
 	switch(STATE){
 		case (0) :
@@ -125,14 +117,16 @@ int main(int argc, char *argv[]){
 	// Pauses the DC motor when the pause button (INT4, PE4) is pressed until the pause button is pressed again
 	PAUSE_STAGE:
 	
+	LCDClear();
 	LCDWriteString("PAUSE"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	while(STATE == 4); // Wait until pause button is pressed again
 	
-	LCDWriteString("NORMAL"); // Output "NORMAL" to LCD
 	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
+	LCDClear();
+	LCDWriteString("ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 	// end PAUSE STAGE
 	//------------------------------------------------------------------------------------------------------//
@@ -167,6 +161,7 @@ void step_home(void) {
 	PolePosition = 0;
 	CurPosition = 0;
 
+	// TEST0
 	mTimer(2000);
 
 } // Homing Function
@@ -365,18 +360,17 @@ ISR(INT3_vect){
 
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
-	while ((PINE & 0b00010000) == 0);		// ACTIVE-LO sits in loop until button is released (masking button bit)
-	
-	if(STATE == 0) {
-		STATE = 4;
-	}
 	
 	if(STATE == 4) {
 		STATE = 0;
 	}
+	else {
+		STATE = 4;
+	}
 } // Break and end interrupt
 
 ISR(ADC_vect) {
+
 	ADC_result = ADCH; // Store the ADC reading in the global variable
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
@@ -388,6 +382,10 @@ ISR(ADC_vect) {
 // The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
 ISR(BADISR_vect)
 {
+	// Write BADISR to LCD
+	LCDClear();
+	LCDWriteString("BADISR");
+	mTimer(2000);
 	// user code here
 }
 
