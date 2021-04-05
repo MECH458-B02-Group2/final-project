@@ -1,0 +1,24 @@
+Test 0 - Home stepper
+Reset -> 
+Stepper homes
+DC motor stays on
+LCD output correct
+Pause  button not working
+
+SUCCESS
+
+Test 1 - Scan and stop works correctly, does not output value
+Reset
+Stepper homes
+Display doesn't clear
+Aluminum goes through
+Didn't clear display
+
+Test 2
+LCD displays active
+Stepper homes
+DC motor turns on
+Pause displays pause
+Button can be pushed over and over toggling the LCD
+
+SUCCESS
