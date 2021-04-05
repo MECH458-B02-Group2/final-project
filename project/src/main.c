@@ -50,6 +50,14 @@ int main(int argc, char *argv[]){
 	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
 	int reflect_val;
 
+	// Linked Queue
+	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
+	link *reflect; // Pointer to the last link that has received a reflective reading
+	link *ferro_t; // Pointer to the last link that has been sorted - also the linked queue tail
+	lq_setup(&bucket_h, &reflect, &ferro_t);
+	link *newLink;
+	newLink = NULL;
+
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
@@ -112,10 +120,9 @@ int main(int argc, char *argv[]){
 	// Description:
 	
 	MAGNETIC_STAGE:
-	// When OI (First optical sensor) Interrupt is triggered come here
-	// Do whatever is necessary HERE
-	PORTC = 0x01; // Just output pretty lights know you made it here
-	//Reset the state variable
+
+
+
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -380,25 +387,33 @@ void mTimer(int count) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
+// Linked Queue Setup
+void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
+	*bucket_h = NULL;
+	*reflect = NULL;
+	*ferro_t = NULL;
+}
+
 /****************************************************************************************
 *  DESC: Accepts as input a new link by reference, and assigns the head and tail
 *  of the queue accordingly
 *  INPUT: the head and tail pointers, and a pointer to the new link that was created
 */
 /* will put an item at the tail of the queue */
-void enqueue(link **h, link **t, link **nL){
+void enqueue(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 
-	if (*t != NULL){
+	if (*ferro_t != NULL){
 		/* Not an empty queue */
-		(*t)->next = *nL;
-		*t = *nL; //(*t)->next;
+		(*ferro_t)->next = *newLink;
+		*ferro_t = *newLink; //(*t)->next;
 	}/*if*/
 	else{
 		/* It's an empty Queue */
 		//(*h)->next = *nL;
 		//should be this
-		*h = *nL;
-		*t = *nL;
+		*bucket_h = *newLink;
+		*reflect = *newLink;
+		*ferro_t = *newLink;
 	}/* else */
 	return;
 }/*enqueue*/
