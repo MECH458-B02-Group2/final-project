@@ -131,8 +131,11 @@ int main(int argc, char *argv[]){
 	
 	// Display on LCD
 	LCDClear();
+	LCDWriteIntXY(0,1,500,3);
+	mTimer(5000);
+	LCDClear();
 	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(2000);
+	mTimer(5000);
 
 	PORTC = 0x04; // Just output pretty lights know you made it here
 	//Reset the state variable
