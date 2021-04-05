@@ -49,6 +49,7 @@ int main(int argc, char *argv[]){
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
 	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
 	int reflect_val;
+	int bucket_steps;
 
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -174,6 +175,33 @@ int main(int argc, char *argv[]){
 	// When EX (End optical sensor) Sensor is triggered come here
 	// If the bucket is not in the correct position, rotate to the correct position
 	// Need to use the correct acceleration profile of the stepper to do this
+
+	// if() { // if bucket is not at correct stage
+		DC_Stop();
+		// bucket_steps = Det_Steps();
+		// or
+		// Use CurPosition to determine if rotation is required:
+		// Can just do a remainder function for how many steps are in a full revolution to figure out where the stepper is at - then
+		// Determine if the desired position is faster going clockwise or CCW
+
+		// So something like
+		// current material = list.current material -> don't need this, just helps with understanding
+		// remainder = CurPosition/Steps in 360
+		// black = 0
+		// white = 70
+		// steel = 140
+		// aluminum = 210
+		// if(CurPosition-70*current material>CurPosition + 70*current material) {
+		//	stepccw(CurPosition-70*current material)
+		// }
+		// else {
+		//	stepccw(CurPosition-70*current material)
+		// }
+		// Something like that, needs some work but good idea
+
+	// }
+
+
 	PORTC = 0x08;
 	//Reset the state variable
 	STATE = 0;
