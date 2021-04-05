@@ -394,13 +394,11 @@ void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	*ferro_t = NULL;
 }
 
-/****************************************************************************************
-*  DESC: Accepts as input a new link by reference, and assigns the head and tail
-*  of the queue accordingly
-*  INPUT: the head and tail pointers, and a pointer to the new link that was created
-*/
-/* will put an item at the tail of the queue */
-void enqueue(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
+// ENQUEUE
+// Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
+//              This occurs when there is a ferromagnetic reading.
+
+void enqueue_link(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 
 	if (*ferro_t != NULL){
 		/* Not an empty queue */
@@ -418,28 +416,35 @@ void enqueue(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 	return;
 }/*enqueue*/
 
-/**************************************************************************************
-* DESC : Removes the link from the head of the list and assigns it to deQueuedLink
-* INPUT: The head and tail pointers, and a ptr 'deQueuedLink' 
-* 		 which the removed link will be assigned to
-*/
-/* This will remove the link and element within the link from the head of the queue */
-void dequeue(link **bucket_h, link **reflect, link **ferro_t){
+
+// NEXT LINK
+// Description: This subroutine points the reflect pointer to the next link in the queue.
+//              This occurs when there is a reflective reading
+
+void next_link(link **reflect) {
+	*reflect = (*reflect)->next;
+}
+
+// DEQUEUE
+// Description: This subroutine dequeues the link pointed to by the head (bucket_h). This occurs 
+//              during the bucket stage when the piece is sorted.
+
+void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
 
 	link *temp;
 
 	/* Ensure it is not an empty queue */
-	if (bucket_h != NULL){
-		temp = bucket_h;
-		if (reflect == bucket_h) {
-			reflect = (reflect)->next;
+	if (*bucket_h != NULL){
+		temp = *bucket_h;
+		if (*reflect == *bucket_h) {
+			*reflect = (*reflect)->next;
 		}
-		bucket_h = (bucket_h)->next;
+		*bucket_h = (*bucket_h)->next;
 		free(temp);
 	}/*if*/
 
 	// If it becomes an empty queue, set other pointers to NULL
-	if (bucket_h == NULL) {
+	if (*bucket_h == NULL) {
 		*reflect = NULL;
 		*ferro_t = NULL;
 	}
