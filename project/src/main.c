@@ -433,15 +433,14 @@ void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
 
 	link *temp;
 
-	/* Ensure it is not an empty queue */
-	if (*bucket_h != NULL){
-		temp = *bucket_h;
-		if (*reflect == *bucket_h) {
+	if (*bucket_h != NULL){ // Ensure it is not an empty queue
+		*temp = *bucket_h; // Point temp to same link as head pointer (bucket_h)
+		if (*reflect == *bucket_h) { // Shift reflect pointer if it points to same link as head pointer
 			*reflect = (*reflect)->next;
 		}
-		*bucket_h = (*bucket_h)->next;
-		free(temp);
-	}/*if*/
+		*bucket_h = (*bucket_h)->next; // Shift head pointer
+		free(temp); // Free memory of dequeued link
+	}
 
 	// If it becomes an empty queue, set other pointers to NULL
 	if (*bucket_h == NULL) {
