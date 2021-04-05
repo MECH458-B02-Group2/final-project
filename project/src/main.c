@@ -4,22 +4,30 @@
 #include "mainHeader.h"
 #include "lcd.h"
 
-// Main Start
+/*------------------------------------------------------------------------------------------------------*/
+/* MAIN ROUTINE ----------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
 int main(int argc, char *argv[]){
-	
+
+  /* INITIALIZATIONS -----------------------------------------------------------------------------------*/
+	// #region
+	// Description:
+
+	// Clock & Timer Prescalers
 	CLKPR = 0x80;
 	CLKPR = 0x01;		//  sets system clock to 8MHz
 	TCCR1B |= _BV(CS11); // Set the timer 1 prescaler to 8 --> f=1MHz
 	TCCR0B |= _BV(CS01); // Set the timer prescalar to 8 --> 3.9 kHz (8MHz/(N*256)
 	
-	//Initialize LCD module
+	// LEDs and LCD module (PORTC)
 	InitLCD(LS_BLINK|LS_ULINE);
-	//Clear the screen
 	LCDClear();
 	LCDWriteString("ACTIVE");
+	DDRC = 0xFF;		// LED Output
+	PORTC = 0x00; // Set display off to start
 
+	// External Interrupts
 	cli();		// Disables all interrupts
-	
 	// Set up the Interrupt 0,3 options
 	// See page 112 - EIFR External Interrupt Flags...notice how they reset on their own in 'C'...not in assembly
 	// EIMSK |= 0x0C; // == 0b00000100 | 0b00000010 // THIS LINE WAS IN THE EXAMPLE CODE BUT WE REPLACED IT WITH THE BELOW CODE
@@ -31,45 +39,45 @@ int main(int argc, char *argv[]){
 	EICRA |= _BV(ISC21); // | _BV(ISC20); Falling edge interrupt - active low
 	// EICRA |= _BV(ISC31) | _BV(ISC30);
 	EICRA |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
-
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
 	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
 
+	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
 	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
+	int reflect_val;
 
-	// Initialize ports
+	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
-	DDRC = 0xFF;		// just use as a display
-	PORTC = 0x00; // Set display off to start
-	// Set PORTB (DC motor port) to output (B7 = PWM, B3 = IA, B2 = IB, B1 = EA, B0 = EB)
-	DDRB = 0xFF; // Initialize port B for output to motor driver
-	PORTB = 0x00; //Initialize all pins to be low
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
 	PORTA = 0b00000000;
 	
-	// Declarations
-	int reflect_val;
-	
-	// Home Stepper Motor
+	// Stepper Motor
 	step_home();
 	
-	// Enable PWM for motor pin
+	// DC Motor
+	// Set PORTB (DC motor port) to output (B7 = PWM, B3 = IA, B2 = IB, B1 = EA, B0 = EB)
+	DDRB = 0xFF; // Initialize port B for output to motor driver
+	PORTB = 0x00; //Initialize all pins to be low
 	PWM(); // Initialize PWM
+	// Start running the motor
+	PORTB = 0b00000111; // Motor running forward
+	
+// #endregion
 	
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
-	
-	// Start running the motor
-	PORTB = 0x07; // Motor running forward
 
+	// Enter polling loop
 	STATE = 0;
-	
 	goto POLLING_STAGE;
-	
-	// POLLING STATE
+
+	/* POLLING STAGE -------------------------------------------------------------------------------------*/
+	// #region
+	// Description:
+            
 	POLLING_STAGE:
 	
 	switch(STATE){
@@ -93,6 +101,12 @@ int main(int argc, char *argv[]){
 		default :
 		goto POLLING_STAGE;
 	}//switch STATE
+
+	// #endregion POLLING STAGE --------------------------------------------------------------------------//
+
+	/* MAGNETIC STAGE ------------------------------------------------------------------------------------*/
+	// #region
+	// Description:
 	
 	MAGNETIC_STAGE:
 	// When OI (First optical sensor) Interrupt is triggered come here
@@ -101,6 +115,12 @@ int main(int argc, char *argv[]){
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
+
+	// #endregion MAGNETIC STAGE -------------------------------------------------------------------------//
+	
+	/* REFLECTIVE STAGE ----------------------------------------------------------------------------------*/
+	// #region
+	// Description: 
 
 	REFLECTIVE_STAGE:
 	// When OR (Second optical sensor) interrupt is triggered come here
@@ -138,7 +158,13 @@ int main(int argc, char *argv[]){
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
-	
+
+	// #endregion REFLECTIVE STAGE -----------------------------------------------------------------------//
+
+	/* BUCKET STAGE --------------------------------------------------------------------------------------*/
+	// #region
+	// Description: 
+  
 	BUCKET_STAGE:
 	// When EX (End optical sensor) Sensor is triggered come here
 	// If the bucket is not in the correct position, rotate to the correct position
@@ -148,8 +174,13 @@ int main(int argc, char *argv[]){
 	STATE = 0;
 	goto POLLING_STAGE;
 
-	// PAUSE STAGE -----------------------------------------------------------------------------------------//
-	// Pauses the DC motor when the pause button (INT4, PE4) is pressed until the pause button is pressed again
+	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
+
+	/* PAUSE STAGE ---------------------------------------------------------------------------------------*/
+	// #region
+	// Description: Pauses the DC motor when the pause button (INT4, PE4) is pressed until the pause button 
+	//              is pressed again.
+
 	PAUSE_STAGE:
 	
 	LCDClear();
@@ -163,11 +194,12 @@ int main(int argc, char *argv[]){
 	LCDClear();
 	LCDWriteString("ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
-	// end PAUSE STAGE
-	//------------------------------------------------------------------------------------------------------//
-	
-	// END STAGE -------------------------------------------------------------------------------------------//
-	// [Description]
+
+	// #endregion PAUSE STAGE ----------------------------------------------------------------------------//
+
+	/* END STAGE -----------------------------------------------------------------------------------------*/
+	// #region
+	// Description:           
 	END_STAGE:
 
 	// The closing STATE ... how would you get here?
@@ -175,14 +207,15 @@ int main(int argc, char *argv[]){
 	// Stop everything here...'MAKE SAFE'
 	// cli();
 	return(0);
-	// end END STAGE
-	//------------------------------------------------------------------------------------------------------//
+
+	// #endregion END STAGE ------------------------------------------------------------------------------//
 
 } // end main()
 
-//------------------------------------------------------------------------------------------------------//
-// STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+/*------------------------------------------------------------------------------------------------------*/
+/* STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
+// #region 
 
 //Homing function
 void step_home(void) {
@@ -274,9 +307,12 @@ void stepccw (int step) {
 	} // for
 } // stepccw
 
-//------------------------------------------------------------------------------------------------------//
-// DC MOTOR SUBROUTINES --------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+// #endregion
+
+/*------------------------------------------------------------------------------------------------------*/
+/* DC MOTOR SUBROUTINES --------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
+// #region 
 
 void DC_Start(void) {
 	// Start running the motor
@@ -291,9 +327,12 @@ void DC_Stop(void) {
 	return;
 } // Motor stop
 
-//------------------------------------------------------------------------------------------------------//
-// TIMERS ----------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+// #endregion
+
+/*------------------------------------------------------------------------------------------------------*/
+/* TIMERS ----------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
+// #region
 
 void PWM(void) {
 	
@@ -326,9 +365,12 @@ void mTimer(int count) {
 
 } // mTimer
 
-//------------------------------------------------------------------------------------------------------//
-// LINKED QUEUE SUBROUTINES ----------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+// #endregion
+
+/*------------------------------------------------------------------------------------------------------*/
+/* LINKED QUEUE SUBROUTINES ----------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
+// #region 
 
 /****************************************************************************************
 *  DESC: Accepts as input a new link by reference, and assigns the head and tail
@@ -375,13 +417,12 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 	return;
 }/*dequeue*/
 
-//------------------------------------------------------------------------------------------------------//
-// INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+// #endregion
 
-//------------------------------------------------------------------------------------------------------//
-// ISR SUBROUTINES -----------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
+/*------------------------------------------------------------------------------------------------------*/
+/* INTERRUPT SERVICE ROUTINES --------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------*/
+// #region 
 
 /* PD0 = OI Sensor (Active Lo) */
 //ISR(INT0_vect){
@@ -440,15 +481,5 @@ ISR(BADISR_vect)
 	// user code here
 }
 
-
-
-
-
-
-
-
-
-
-
-
+// #endregion
 
