@@ -420,23 +420,30 @@ void enqueue(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 
 /**************************************************************************************
 * DESC : Removes the link from the head of the list and assigns it to deQueuedLink
-* INPUT: The head and tail pointers, and a ptr 'deQueuedLink'
+* INPUT: The head and tail pointers, and a ptr 'deQueuedLink' 
 * 		 which the removed link will be assigned to
 */
 /* This will remove the link and element within the link from the head of the queue */
-void dequeue(link **h, link **t, link **deQueuedLink){
-	/* ENTER YOUR CODE HERE */
-	*deQueuedLink = *h;	// Will set to NULL if Head points to NULL
-	/* Ensure it is not an empty queue */
-	if (*h != NULL){
-		*h = (*h)->next;
-	}/*if*/
-  
-  /* If the queue is empty and h is NULL, set t to NULL */
-  if (*h == NULL){
-    *t = NULL;
-  }
+void dequeue(link **bucket_h, link **reflect, link **ferro_t){
 
+	link *temp;
+
+	/* Ensure it is not an empty queue */
+	if (bucket_h != NULL){
+		temp = bucket_h;
+		if (reflect == bucket_h) {
+			reflect = (reflect)->next;
+		}
+		bucket_h = (bucket_h)->next;
+		free(temp);
+	}/*if*/
+
+	// If it becomes an empty queue, set other pointers to NULL
+	if (bucket_h == NULL) {
+		*reflect = NULL;
+		*ferro_t = NULL;
+	}
+	
 	return;
 }/*dequeue*/
 

@@ -75,4 +75,4 @@ void mTimer(int count);
 //------------------------------------------------------------------------------------------------------//
 void lq_setup(link **bucket_h, link **reflect, link **ferro_t);
 void enqueue(link **bucket_h, link **reflect, link **ferro_t, link **newLink);
-void dequeue(link **h, link **t, link **deQueuedLink);
+void dequeue(link **bucket_h, link **reflect, link **ferro_t);
