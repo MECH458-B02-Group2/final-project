@@ -11,6 +11,7 @@ int main(int argc, char *argv[]){
 
   /* INITIALIZATIONS -----------------------------------------------------------------------------------*/
 	// #region
+
 	// Description:
 
 	// Clock & Timer Prescalers
@@ -76,6 +77,7 @@ int main(int argc, char *argv[]){
 
 	/* POLLING STAGE -------------------------------------------------------------------------------------*/
 	// #region
+
 	// Description:
             
 	POLLING_STAGE:
@@ -106,6 +108,7 @@ int main(int argc, char *argv[]){
 
 	/* MAGNETIC STAGE ------------------------------------------------------------------------------------*/
 	// #region
+
 	// Description:
 	
 	MAGNETIC_STAGE:
@@ -120,6 +123,7 @@ int main(int argc, char *argv[]){
 	
 	/* REFLECTIVE STAGE ----------------------------------------------------------------------------------*/
 	// #region
+
 	// Description: 
 
 	REFLECTIVE_STAGE:
@@ -163,6 +167,7 @@ int main(int argc, char *argv[]){
 
 	/* BUCKET STAGE --------------------------------------------------------------------------------------*/
 	// #region
+
 	// Description: 
   
 	BUCKET_STAGE:
@@ -178,6 +183,7 @@ int main(int argc, char *argv[]){
 
 	/* PAUSE STAGE ---------------------------------------------------------------------------------------*/
 	// #region
+
 	// Description: Pauses the DC motor when the pause button (INT4, PE4) is pressed until the pause button 
 	//              is pressed again.
 
@@ -199,7 +205,9 @@ int main(int argc, char *argv[]){
 
 	/* END STAGE -----------------------------------------------------------------------------------------*/
 	// #region
-	// Description:           
+
+	// Description:
+
 	END_STAGE:
 
 	// The closing STATE ... how would you get here?
