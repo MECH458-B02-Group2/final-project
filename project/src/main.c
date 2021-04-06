@@ -143,35 +143,13 @@ int main(int argc, char *argv[]){
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	reflect_val = 0; // Temporary overwrite variable
 	// See if sensor is still active low
-	while((PIND & 0b00000001) == 0b00000001) { 
+	while((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 		if (ADC_result>reflect_val) {
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
 
-	// Determine which type of material
-	if(Al_low <= reflect_val && reflect_val <= Al_high) {
-		//add to link for aluminum
-	} else if(St_low <= reflect_val && reflect_val <= St_high) {
-		//add to link as steel
-	} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
-		//add to link as white
-	} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
-		// add to link as black
-	}
-	
-	// FOR TEST 1 - Reflective sensor
-	mTimer(500);
-	DC_Stop();
-	
-	// Display on LCD
-	LCDClear();
-	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(2000);
-
-	PORTC = 0x04; // Just output pretty lights know you made it here
-	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -495,6 +473,8 @@ ISR(INT0_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
+	LCDClear();
+	LCDWriteString("INT0");
 
 	STATE = 1; // will goto MAGNETIC_STAGE
 } // OI
@@ -506,6 +486,8 @@ ISR(INT2_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
+	LCDClear();
+	LCDWriteString("INT2");
 
 	STATE = 2; // will goto REFLECTIVE_STAGE
 } // OR
@@ -516,6 +498,8 @@ ISR(INT3_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
+	LCDClear();
+	LCDWriteString("INT3");
 
 	STATE = 3; // will goto BUCKET_STAGE
 } // EX
