@@ -18,7 +18,6 @@ int const Speed = 0x50;
 	Steel    - 400 - 700
 	White    - 870 - 935
 	Black    - 936 - 980 */
-int const ADC_min = 5;
 int const Al_low = 0;
 int const Al_high = 255;
 int const St_low = 400;
