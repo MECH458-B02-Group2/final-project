@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Declarations
-	int reflect_val;
+	
 	
 	// Home Stepper Motor
 	step_home();
@@ -107,15 +107,9 @@ int main(int argc, char *argv[]){
 	REFLECTIVE_STAGE:
 	// When OR (Second optical sensor) interrupt is triggered come here
 	// 5V/1024 = 0.00488V of resolution
-	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
-	// See if sensor is still active high
-	while((PIND & 0b00000100) == 0b00000100) { 
-		ADCSRA |= _BV(ADSC); // Take another ADC reading
-		if (ADC_result<reflect_val) {
-			reflect_val = ADC_result;
-		} // Overwrite previous value if bigger
-	}
 	
+	// See if sensor is still active high
+
 	// FOR TEST 1 - Reflective sensor
 	mTimer(100);
 	DC_Stop();
@@ -123,10 +117,6 @@ int main(int argc, char *argv[]){
 	// Display on LCD
 	LCDClear();
 	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(5000);
-	LCDClear();
-	mTimer(1000);
-	LCDWriteIntXY(0,1,ADC_result,3);
 	mTimer(5000);
 
 	PORTC = 0x04; // Just output pretty lights know you made it here
@@ -377,7 +367,9 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 
 /* PD2 = OR Sensor (Active Hi) */
 ISR(INT2_vect){
+	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 	STATE = 2;
+	ADCSRA |= _BV(ADSC); // Take another ADC reading
 	// Want to go to do ISR 
 } // Reflective optical sensor
 
@@ -401,8 +393,18 @@ ISR(INT4_vect) {
 } // Break and end interrupt
 
 ISR(ADC_vect) {
-	ADC_result = ADC; // Store the ADC reading in the global variable
-	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
+
+	if(ADC<reflect_val){
+		reflect_val = ADC;
+	} // Find the lowest ADC value
+	
+	if((PIND & 0b00000100) == 0b00000100) { 
+		ADCSRA |= _BV(ADSC); // Take another ADC reading
+	} else{
+		// enqueue
+		// go to next state - Simon said the display state
+		// Mal and I decided that we already specify state 2 and we don't need to respecify
+	} // Continue taking readings and then add to the linked list
 } // ADC end
 
 /* PE5 = RampDown (Active Lo) */
