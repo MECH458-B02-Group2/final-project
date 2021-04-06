@@ -24,7 +24,6 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
 	LCDWriteString("ACTIVE");
-	LCDWriteStringXY(0,1, "F:00  R:00");
 
 	DDRC = 0xFF;		// LED Output
 	PORTC = 0x00; // Set display off to start
@@ -50,14 +49,12 @@ int main(int argc, char *argv[]){
 	int reflect_val;
 
 	// Linked Queue
-	int pieces_reflect; // for TEST 3
-	int pieces_ferro; // for TEST 3
 	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
 	link *reflect; // Pointer to the last link that has received a reflective reading
 	link *ferro_t; // Pointer to the last link that has been sorted - also the linked queue tail
-	lq_setup(&bucket_h, &reflect, &ferro_t);
-	link *newLink;
-	newLink = NULL;
+	lq_setup(&bucket_h, &reflect, &ferro_t); // Set all pointers to NULL
+	link *newLink; // temp link which will be allocated memory with initLink() before enqueueLink()
+	newLink = NULL; // set newLink to NULL
 
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -122,23 +119,14 @@ int main(int argc, char *argv[]){
 	
 	MAGNETIC_STAGE:
 
-	// Set ferro_val in link element
+	// take reading
 
+	// Magnetic Stage Linked Queue
+	// Enqueue new link each time a ferromagnetic reading is taken
 	initLink(&newLink);
-
-
 	enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
 
-	// store data
-
-	// for TEST 3
-	pieces_ferro = lq_size(&bucket_h, &ferro_t);
-	pieces_ferro++;
-	LCDWriteIntXY(2, 1, pieces_ferro, 2);
-	LCDWriteStringXY(0, 0, "ACTIVE");
-	LCDWriteStringXY(6, 0, "          ");
-	LCDWriteStringXY(4, 1, "  ");
-	LCDWriteStringXY(10, 1, "      ");
+	ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
 
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -161,25 +149,17 @@ int main(int argc, char *argv[]){
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
-
 	// Malaki - noticing that this while loop blocks other functionality
 	// eg. while there is a piece in front of the optical sensor, the system will not pause
 
+	// Reflective Stage Linked Queue
+	// Move the reflect pointer to next link if there is already a reading in the current link and if it
+	// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
 	if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
-		nextLink(&reflect);
+		nextLink(&reflect); // Move reflect pointer to next link
 	}
 
-	reflect->e.reflect_val = 12; // set to 12 for TEST 3, set back to reflect_val afterwards
-
-	pieces_reflect = lq_size(&bucket_h, &reflect); // for TEST 3
-	pieces_reflect++;
-
-	// for TEST 3
-	LCDWriteIntXY(8, 1, pieces_reflect, 2);
-	LCDWriteStringXY(0, 0, "ACTIVE");
-	LCDWriteStringXY(6, 0, "          ");
-	LCDWriteStringXY(4, 1, "  ");
-	LCDWriteStringXY(10, 1, "      ");
+	reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
 
 
 	STATE = 0;
@@ -194,24 +174,11 @@ int main(int argc, char *argv[]){
   
 	BUCKET_STAGE:
 	
-	dequeueLink(&bucket_h, &reflect, &ferro_t);
+	// Sorting algorithm
 
-	// for TEST 3
-	pieces_ferro = lq_size(&bucket_h, &ferro_t);
-	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
-	if (!lq_isEmpty(&bucket_h)) {
-		pieces_ferro++;
-		if(!(reflect == bucket_h && reflect->e.reflect_val >= 0)) {
-			pieces_reflect++;
-		}
-	}
-	LCDWriteIntXY(2, 1, pieces_ferro, 2);
-	LCDWriteIntXY(8, 1, pieces_reflect, 2);
-	LCDWriteStringXY(0, 0, "ACTIVE");
-	LCDWriteStringXY(6, 0, "          ");
-	LCDWriteStringXY(4, 1, "  ");
-	LCDWriteStringXY(10, 1, "      ");
-
+	// Bucket Stage Linked Queue
+	// Dequeue link after the reading have been extracted for the sorting algorithm
+	dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
 
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -415,16 +382,8 @@ void mTimer(int count) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-// INITIALIZE LINK
-void initLink(link **newLink){
-	*newLink = malloc(sizeof(link));
-	(*newLink)->next = NULL;
-	(*newLink)->e.reflect_val = -1;
-	(*newLink)->e.ferro_val = -1;
-	return;
-} //initLink
-
 // LINKED QUEUE SETUP
+// Description: This subroutine sets all linked queue pointers to NULL.
 void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	*bucket_h = NULL;
 	*reflect = NULL;
@@ -432,75 +391,47 @@ void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	return;
 }
 
-// LINKED QUEUE SIZE
-// Description: This subroutine measures the number of links from one pointer to another. This will 
-//              mostly be used for debugging purposes.
-
-int lq_size(link **first, link **last) {
-
-	link 	*temp;			/* will store the link while traversing the queue */
-	int 	numElements;
-
-	numElements = 0;
-
-	temp = *first;			/* point to the first item in the list */
-
-	while(temp != *last){
-		numElements++;
-		temp = temp->next;
-	}/*while*/
-	
-	return(numElements);
-}/*lq_size*/
-
-// LINKED QUEUE IS EMPTY
-// Description: This subroutine checks if the queue is empty. * This can probably be deleted after
-// 							TEST 3.
-int lq_isEmpty(link **head) {
-	if (*head == NULL) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
-} // lq_isEmpty
+// INITIALIZE LINK
+// Description: This subroutine initializes a new link with allocated memory to prepare the link for
+//							enqueuing.
+void initLink(link **newLink){
+	*newLink = malloc(sizeof(link)); // Allocate memory
+	(*newLink)->next = NULL; // set next link as NULL
+	// Set values to negative (to determine if the link has received a specific reading yet)
+	(*newLink)->e.reflect_val = -1;
+	(*newLink)->e.ferro_val = -1;
+	return;
+} //initLink
 
 // ENQUEUE
 // Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
 //              This occurs when there is a ferromagnetic reading.
-
 void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 
-	if (*ferro_t != NULL){
-		/* Not an empty queue */
-		(*ferro_t)->next = *newLink;
-		*ferro_t = *newLink; //(*t)->next;
-	}/*if*/
-	else{
-		/* It's an empty Queue */
-		//(*h)->next = *nL;
-		//should be this
+	if (*ferro_t != NULL){ // If linked queue is not empty
+		(*ferro_t)->next = *newLink; // append newLink
+		*ferro_t = *newLink; // move ferro_t pointer to new link
+	}
+	else{ // If linked queue is empty, move all pointers to newLink
 		*bucket_h = *newLink;
 		*reflect = *newLink;
 		*ferro_t = *newLink;
-	}/* else */
+	}
 	return;
-}/*enqueue*/
+}/*enqueueLink*/
 
 
 // NEXT LINK
 // Description: This subroutine points the reflect pointer to the next link in the queue.
 //              This occurs when there is a reflective reading
-
 void nextLink(link **reflect) {
-	*reflect = (*reflect)->next;
+	*reflect = (*reflect)->next; // move reflect pointer to next link
 	return;
 }
 
 // DEQUEUE
 // Description: This subroutine dequeues the link pointed to by the head (bucket_h). This occurs 
 //              during the bucket stage when the piece is sorted.
-
 void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
 
 	link *temp;
