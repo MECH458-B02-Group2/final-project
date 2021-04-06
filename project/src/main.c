@@ -31,15 +31,15 @@ int main(int argc, char *argv[]){
 	cli();		// Disables all interrupts
 	// Set up the Interrupt 0,3 options
 	// See page 112 - EIFR External Interrupt Flags...notice how they reset on their own in 'C'...not in assembly
-	// EIMSK |= 0x0C; // == 0b00000100 | 0b00000010 // THIS LINE WAS IN THE EXAMPLE CODE BUT WE REPLACED IT WITH THE BELOW CODE
 	// EIMSK |= (_BV(INT1)); // enable INT1
 	EIMSK |= (_BV(INT2)); // enable INT2
+	EIMSK |= (_BV(INT3)); // enable INT2
 	EIMSK |= (_BV(INT4)); // enable INT4
 	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
 	// Set Interrupt sense control to catch a rising edge
 	EICRA |= _BV(ISC21); // | _BV(ISC20); Falling edge interrupt - active low
-	// EICRA |= _BV(ISC31) | _BV(ISC30);
-	EICRA |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
+	EICRA |= _BV(ISC31); // | _BV(ISC30); Falling edge interrupt - active low
+	EICRA |= _BV(ISC41); // | _BV(ISC40); Falling edge interrupt - active low
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
 	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
 
@@ -476,10 +476,9 @@ ISR(INT2_vect){
 } // Reflective optical sensor
 
 /* PD3 = EX Sensor (Active Lo) */
-//ISR(INT3_vect){
-//	STATE = 3;
-	// Want to check if in the correct position for the bucket
-//} // End optical sensor
+ISR(INT3_vect){
+	STATE = 3;
+} // End optical sensor
 
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
