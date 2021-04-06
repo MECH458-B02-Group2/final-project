@@ -39,8 +39,8 @@ volatile unsigned int Escape; // Probably WONT NEED, was for the end routine int
 
 // Linked Queue
 typedef struct {
-  int ferro; // Need to distinguish between aluminum and steel
-	int reflect; // Need to distinguish between white and black delrin
+  int ferro_val; // Need to distinguish between aluminum and steel
+	int reflect_val; // Need to distinguish between white and black delrin
 } element;
 
 typedef struct link{
@@ -73,6 +73,8 @@ void mTimer(int count);
 //------------------------------------------------------------------------------------------------------//
 // LINKED QUEUE SUBROUTINES ----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
-
-void enqueue(link **h, link **t, link **nL);
-void dequeue(link **h, link **t, link **deQueuedLink);
+void lq_setup(link **bucket_h, link **reflect, link **ferro_t);
+void initLink(link **newLink);
+void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink);
+void nextLink(link **reflect);
+void dequeueLink(link **bucket_h, link **reflect, link **ferro_t);
