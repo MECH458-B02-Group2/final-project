@@ -31,19 +31,16 @@ int main(int argc, char *argv[]){
 
 	// External Interrupts
 	cli();		// Disables all interrupts
-	// Set up the Interrupt 0,3 options
-	// See page 112 - EIFR External Interrupt Flags...notice how they reset on their own in 'C'...not in assembly
-	// EIMSK |= 0x0C; // == 0b00000100 | 0b00000010 // THIS LINE WAS IN THE EXAMPLE CODE BUT WE REPLACED IT WITH THE BELOW CODE
-	// EIMSK |= (_BV(INT1)); // enable INT1
+
+	EIMSK |= (_BV(INT0)); // enable INT0
 	EIMSK |= (_BV(INT2)); // enable INT2
+	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
-	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
-	// Set Interrupt sense control to catch a rising edge
-	EICRA |= _BV(ISC21); // | _BV(ISC20); Falling edge interrupt - active low
-	// EICRA |= _BV(ISC31) | _BV(ISC30);
-	EICRA |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
-	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
-	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
+
+	EICRA |= _BV(ISC01); // INT) Falling edge - Active Lo
+	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
+	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
+	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
@@ -495,6 +492,10 @@ void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
 // Optical Sensor for Magnetic Stage (OI)
 // PD0 (INT0) (Active Lo)
 ISR(INT0_vect){
+
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+
 	STATE = 1; // will goto MAGNETIC_STAGE
 } // OI
 
@@ -502,17 +503,28 @@ ISR(INT0_vect){
 // Optical Sensor for Reflective Stage (OR)
 // PD2 (INT2) (Active Hi)
 ISR(INT2_vect){
+
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+
 	STATE = 2; // will goto REFLECTIVE_STAGE
 } // OR
 
 // Optical Sensor for Bucket Stage (EX)
 // PD2 (INT2) (Active Hi)
 ISR(INT3_vect){
+
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+
 	STATE = 3; // will goto BUCKET_STAGE
 } // EX
 
 // Pause button
 ISR(INT4_vect) {
+
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
 	
 	if(STATE == 4) {
 		STATE = 0; // will goto POLLING_STAGE
