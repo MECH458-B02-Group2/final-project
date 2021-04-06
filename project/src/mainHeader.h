@@ -74,6 +74,7 @@ void mTimer(int count);
 // LINKED QUEUE SUBROUTINES ----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 void lq_setup(link **bucket_h, link **reflect, link **ferro_t);
+int lq_size(link **first, link **last);
 void enqueue_link(link **bucket_h, link **reflect, link **ferro_t, link **newLink);
 void next_link(link **reflect);
 void dequeue_link(link **bucket_h, link **reflect, link **ferro_t);

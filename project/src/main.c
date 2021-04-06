@@ -387,12 +387,34 @@ void mTimer(int count) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-// Linked Queue Setup
+// LINKED QUEUE SETUP
 void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	*bucket_h = NULL;
 	*reflect = NULL;
 	*ferro_t = NULL;
 }
+
+
+// LINKED QUEUE SIZE
+// Description: This subroutine measures the number of links from one pointer to another. This will 
+//              mostly be used for debugging purposes.
+
+int lq_size(link **first, link **last) {
+
+	link 	*temp;			/* will store the link while traversing the queue */
+	int 	numElements;
+
+	numElements = 0;
+
+	temp = *first;			/* point to the first item in the list */
+
+	while(temp != *last){
+		numElements++;
+		temp = temp->next;
+	}/*while*/
+	
+	return(numElements);
+}/*lq_size*/
 
 // ENQUEUE
 // Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
