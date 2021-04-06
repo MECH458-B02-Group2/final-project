@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
 	EIMSK |= (_BV(INT4)); // enable INT4
 	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
 	// Set Interrupt sense control to catch a rising edge
-	EICRA |= _BV(ISC21); // | _BV(ISC20); Falling edge interrupt - active low
+	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - active high
 	EICRA |= _BV(ISC31); // | _BV(ISC30); Falling edge interrupt - active low
 	EICRA |= _BV(ISC41); // | _BV(ISC40); Falling edge interrupt - active low
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
 	// Read ADC values, while the value is lower than the previous value overwrite the previous value
 	reflect_val = 0; // Temporary overwrite variable
 	// See if sensor is still active low
-	while((PIND & 0b00000001) == 0b00000001) { 
+	while((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 		if (ADC_result>reflect_val) {
 			reflect_val = ADC_result;
