@@ -11,7 +11,7 @@ volatile int CurPosition;
 int const delay = 20;
 
 // DC Motor
-int const Speed = 0x50;
+int const Speed = 0x80;
 
 // Reflective Sensor Values
 /*  Aluminum - < 255

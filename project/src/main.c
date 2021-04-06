@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
 	// Set Interrupt sense control to catch a rising edge
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - active high
 	// EICRA |= _BV(ISC31) | _BV(ISC30);
-	EICRA |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
+	EICRB |= _BV(ISC41) | _BV(ISC40); // Rising edge interrupt - might want to change?
 
 	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
 	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
@@ -39,7 +39,9 @@ int main(int argc, char *argv[]){
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
-	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
+	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
+	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
+	// ADMUX |= _BV(ADLAR); // Don't want data to be opposite justified
 
 	// Initialize ports
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -104,37 +106,27 @@ int main(int argc, char *argv[]){
 
 	REFLECTIVE_STAGE:
 	// When OR (Second optical sensor) interrupt is triggered come here
-	// Read ADC values, while the value is lower than the previous value overwrite the previous value
-	reflect_val = 0; // Temporary overwrite variable
+	// 5V/1024 = 0.00488V of resolution
+	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 	// See if sensor is still active high
 	while((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
-		if (ADC_result>reflect_val) {
+		if (ADC_result<reflect_val) {
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
-
-	// Determine which type of material
-	if(Al_low <= reflect_val && reflect_val <= Al_high) {
-		//add to link for aluminum
-	} else if(St_low <= reflect_val && reflect_val <= St_high) {
-		//add to link as steel
-	} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
-		//add to link as white
-	} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
-		// add to link as black
-	}
 	
 	// FOR TEST 1 - Reflective sensor
-	mTimer(500);
+	mTimer(100);
 	DC_Stop();
 	
 	// Display on LCD
 	LCDClear();
-	LCDWriteIntXY(0,1,ADC_result,3);
+	LCDWriteIntXY(0,1,reflect_val,3);
 	mTimer(5000);
 	LCDClear();
-	LCDWriteIntXY(0,1,reflect_val,3);
+	mTimer(1000);
+	LCDWriteIntXY(0,1,ADC_result,3);
 	mTimer(5000);
 
 	PORTC = 0x04; // Just output pretty lights know you made it here
@@ -409,7 +401,7 @@ ISR(INT4_vect) {
 } // Break and end interrupt
 
 ISR(ADC_vect) {
-	ADC_result = ADCH; // Store the ADC reading in the global variable
+	ADC_result = ADC; // Store the ADC reading in the global variable
 	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
 } // ADC end
 
