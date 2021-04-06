@@ -122,10 +122,14 @@ int main(int argc, char *argv[]){
 	
 	MAGNETIC_STAGE:
 
-	initLink(&newLink);
 	// Set ferro_val in link element
 
-	enqueue_link(&bucket_h, &reflect, &ferro_t, &newLink);
+	initLink(&newLink);
+
+
+	enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
+
+	// store data
 
 	// for TEST 3
 	pieces_ferro = lq_size(&bucket_h, &ferro_t);
@@ -161,15 +165,16 @@ int main(int argc, char *argv[]){
 	// Malaki - noticing that this while loop blocks other functionality
 	// eg. while there is a piece in front of the optical sensor, the system will not pause
 
-	if (reflect != ferro_t) {
-			next_link(&reflect);
+	if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
+		nextLink(&reflect);
 	}
 
+	reflect->e.reflect_val = 12; // set to 12 for TEST 3, set back to reflect_val afterwards
+
+	pieces_reflect = lq_size(&bucket_h, &reflect); // for TEST 3
+	pieces_reflect++;
+
 	// for TEST 3
-	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
-	if (reflect == ferro_t) {
-		pieces_reflect++;
-	}
 	LCDWriteIntXY(8, 1, pieces_reflect, 2);
 	LCDWriteStringXY(0, 0, "ACTIVE");
 	LCDWriteStringXY(6, 0, "          ");
@@ -189,15 +194,18 @@ int main(int argc, char *argv[]){
   
 	BUCKET_STAGE:
 	
-	dequeue_link(&bucket_h, &reflect, &ferro_t);
+	dequeueLink(&bucket_h, &reflect, &ferro_t);
 
 	// for TEST 3
 	pieces_ferro = lq_size(&bucket_h, &ferro_t);
+	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
 	if (!lq_isEmpty(&bucket_h)) {
 		pieces_ferro++;
+		if(!(reflect == bucket_h && reflect->e.reflect_val >= 0)) {
+			pieces_reflect++;
+		}
 	}
 	LCDWriteIntXY(2, 1, pieces_ferro, 2);
-	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
 	LCDWriteIntXY(8, 1, pieces_reflect, 2);
 	LCDWriteStringXY(0, 0, "ACTIVE");
 	LCDWriteStringXY(6, 0, "          ");
@@ -411,6 +419,8 @@ void mTimer(int count) {
 void initLink(link **newLink){
 	*newLink = malloc(sizeof(link));
 	(*newLink)->next = NULL;
+	(*newLink)->e.reflect_val = -1;
+	(*newLink)->e.ferro_val = -1;
 	return;
 } //initLink
 
@@ -419,6 +429,7 @@ void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	*bucket_h = NULL;
 	*reflect = NULL;
 	*ferro_t = NULL;
+	return;
 }
 
 // LINKED QUEUE SIZE
@@ -458,7 +469,7 @@ int lq_isEmpty(link **head) {
 // Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
 //              This occurs when there is a ferromagnetic reading.
 
-void enqueue_link(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
+void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
 
 	if (*ferro_t != NULL){
 		/* Not an empty queue */
@@ -481,15 +492,16 @@ void enqueue_link(link **bucket_h, link **reflect, link **ferro_t, link **newLin
 // Description: This subroutine points the reflect pointer to the next link in the queue.
 //              This occurs when there is a reflective reading
 
-void next_link(link **reflect) {
+void nextLink(link **reflect) {
 	*reflect = (*reflect)->next;
+	return;
 }
 
 // DEQUEUE
 // Description: This subroutine dequeues the link pointed to by the head (bucket_h). This occurs 
 //              during the bucket stage when the piece is sorted.
 
-void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
+void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
 
 	link *temp;
 
