@@ -190,7 +190,9 @@ int main(int argc, char *argv[]){
 
 	// for TEST 3
 	pieces_ferro = lq_size(&bucket_h, &ferro_t);
-	pieces_ferro++;
+	if (!lq_isEmpty(&bucket_h)) {
+		pieces_ferro++;
+	}
 	LCDWriteIntXY(2, 1, pieces_ferro, 2);
 	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
 	LCDWriteIntXY(8, 1, pieces_reflect, 2);
@@ -436,6 +438,18 @@ int lq_size(link **first, link **last) {
 	
 	return(numElements);
 }/*lq_size*/
+
+// LINKED QUEUE IS EMPTY
+// Description: This subroutine checks if the queue is empty. * This can probably be deleted after
+// 							TEST 3.
+int lq_isEmpty(link **head) {
+	if (*head == NULL) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+} // lq_isEmpty
 
 // ENQUEUE
 // Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
