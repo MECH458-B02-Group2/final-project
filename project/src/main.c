@@ -24,24 +24,22 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
 	LCDWriteString("ACTIVE");
+
 	DDRC = 0xFF;		// LED Output
 	PORTC = 0x00; // Set display off to start
 
 	// External Interrupts
 	cli();		// Disables all interrupts
-	// Set up the Interrupt 0,3 options
-	// See page 112 - EIFR External Interrupt Flags...notice how they reset on their own in 'C'...not in assembly
-	// EIMSK |= (_BV(INT1)); // enable INT1
+
+	EIMSK |= (_BV(INT0)); // enable INT0
 	EIMSK |= (_BV(INT2)); // enable INT2
-	EIMSK |= (_BV(INT3)); // enable INT2
+	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
-	//External Interrupt Control Register A - EICRA (pg 110 and under the EXT_INT tab to the right
-	// Set Interrupt sense control to catch a rising edge
-	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - active high
-	EICRA |= _BV(ISC31); // | _BV(ISC30); Falling edge interrupt - active low
-	EICRA |= _BV(ISC41); // | _BV(ISC40); Falling edge interrupt - active low
-	//	EICRA &= ~_BV(ISC21) & ~_BV(ISC20); /* These lines would undo the above two lines */
-	//	EICRA &= ~_BV(ISC31) & ~_BV(ISC30); /* Nice little trick */
+
+	EICRA |= _BV(ISC01); // INT) Falling edge - Active Lo
+	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
+	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
+	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
@@ -58,6 +56,14 @@ int main(int argc, char *argv[]){
 	Steel = 0;
 	White = 0;
 	Black = 0;
+
+	// Linked Queue
+	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
+	link *reflect; // Pointer to the last link that has received a reflective reading
+	link *ferro_t; // Pointer to the last link that has been sorted - also the linked queue tail
+	lq_setup(&bucket_h, &reflect, &ferro_t); // Set all pointers to NULL
+	link *newLink; // temp link which will be allocated memory with initLink() before enqueueLink()
+	newLink = NULL; // set newLink to NULL
 
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -121,10 +127,16 @@ int main(int argc, char *argv[]){
 	// Description:
 	
 	MAGNETIC_STAGE:
-	// When OI (First optical sensor) Interrupt is triggered come here
-	// Do whatever is necessary HERE
-	PORTC = 0x01; // Just output pretty lights know you made it here
-	//Reset the state variable
+
+	// take reading
+
+	// Magnetic Stage Linked Queue
+	// Enqueue new link each time a ferromagnetic reading is taken
+	initLink(&newLink);
+	enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
+
+	ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
+
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -146,18 +158,19 @@ int main(int argc, char *argv[]){
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
-	
-	// FOR TEST 1 - Reflective sensor
-	mTimer(500);
-	DC_Stop();
-	
-	// Display on LCD
-	LCDClear();
-	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(2000);
+	// Malaki - noticing that this while loop blocks other functionality
+	// eg. while there is a piece in front of the optical sensor, the system will not pause
 
-	PORTC = 0x04; // Just output pretty lights know you made it here
-	//Reset the state variable
+	// Reflective Stage Linked Queue
+	// Move the reflect pointer to next link if there is already a reading in the current link and if it
+	// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
+	if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
+		nextLink(&reflect); // Move reflect pointer to next link
+	}
+
+	reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
+
+
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -215,6 +228,13 @@ int main(int argc, char *argv[]){
 	DC_Start();
 	PORTC = 0x08;
 	//Reset the state variable
+	
+	// Sorting algorithm - (Start of Malaki's code)
+
+	// Bucket Stage Linked Queue
+	// Dequeue link after the reading have been extracted for the sorting algorithm
+	dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
+
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -227,17 +247,15 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
-	
-	LCDClear();
-	LCDWriteString("PAUSE"); // Output "PAUSE" to LCD
+
+	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	while(STATE == 4); // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
-	LCDClear();
-	LCDWriteString("ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
+	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
 	// #endregion PAUSE STAGE ----------------------------------------------------------------------------//
@@ -419,48 +437,75 @@ void mTimer(int count) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-/****************************************************************************************
-*  DESC: Accepts as input a new link by reference, and assigns the head and tail
-*  of the queue accordingly
-*  INPUT: the head and tail pointers, and a pointer to the new link that was created
-*/
-/* will put an item at the tail of the queue */
-void enqueue(link **h, link **t, link **nL){
-
-	if (*t != NULL){
-		/* Not an empty queue */
-		(*t)->next = *nL;
-		*t = *nL; //(*t)->next;
-	}/*if*/
-	else{
-		/* It's an empty Queue */
-		//(*h)->next = *nL;
-		//should be this
-		*h = *nL;
-		*t = *nL;
-	}/* else */
+// LINKED QUEUE SETUP
+// Description: This subroutine sets all linked queue pointers to NULL.
+void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
+	*bucket_h = NULL;
+	*reflect = NULL;
+	*ferro_t = NULL;
 	return;
-}/*enqueue*/
+}
 
-/**************************************************************************************
-* DESC : Removes the link from the head of the list and assigns it to deQueuedLink
-* INPUT: The head and tail pointers, and a ptr 'deQueuedLink'
-* 		 which the removed link will be assigned to
-*/
-/* This will remove the link and element within the link from the head of the queue */
-void dequeue(link **h, link **t, link **deQueuedLink){
-	/* ENTER YOUR CODE HERE */
-	*deQueuedLink = *h;	// Will set to NULL if Head points to NULL
-	/* Ensure it is not an empty queue */
-	if (*h != NULL){
-		*h = (*h)->next;
-	}/*if*/
-  
-  /* If the queue is empty and h is NULL, set t to NULL */
-  if (*h == NULL){
-    *t = NULL;
-  }
+// INITIALIZE LINK
+// Description: This subroutine initializes a new link with allocated memory to prepare the link for
+//							enqueuing.
+void initLink(link **newLink){
+	*newLink = malloc(sizeof(link)); // Allocate memory
+	(*newLink)->next = NULL; // set next link as NULL
+	// Set values to negative (to determine if the link has received a specific reading yet)
+	(*newLink)->e.reflect_val = -1;
+	(*newLink)->e.ferro_val = -1;
+	return;
+} //initLink
 
+// ENQUEUE
+// Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
+//              This occurs when there is a ferromagnetic reading.
+void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
+
+	if (*ferro_t != NULL){ // If linked queue is not empty
+		(*ferro_t)->next = *newLink; // append newLink
+		*ferro_t = *newLink; // move ferro_t pointer to new link
+	}
+	else{ // If linked queue is empty, move all pointers to newLink
+		*bucket_h = *newLink;
+		*reflect = *newLink;
+		*ferro_t = *newLink;
+	}
+	return;
+}/*enqueueLink*/
+
+
+// NEXT LINK
+// Description: This subroutine points the reflect pointer to the next link in the queue.
+//              This occurs when there is a reflective reading
+void nextLink(link **reflect) {
+	*reflect = (*reflect)->next; // move reflect pointer to next link
+	return;
+}
+
+// DEQUEUE
+// Description: This subroutine dequeues the link pointed to by the head (bucket_h). This occurs 
+//              during the bucket stage when the piece is sorted.
+void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
+
+	link *temp;
+
+	if (*bucket_h != NULL){ // Ensure it is not an empty queue
+		temp = *bucket_h; // Point temp to same link as head pointer (bucket_h)
+		if (*reflect == *bucket_h) { // Shift reflect pointer if it points to same link as head pointer
+			*reflect = (*reflect)->next;
+		}
+		*bucket_h = (*bucket_h)->next; // Shift head pointer
+		free(temp); // Free memory of dequeued link
+	}
+
+	// If it becomes an empty queue, set other pointers to NULL
+	if (*bucket_h == NULL) {
+		*reflect = NULL;
+		*ferro_t = NULL;
+	}
+	
 	return;
 }/*dequeue*/
 
@@ -471,36 +516,56 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-/* PD0 = OI Sensor (Active Lo) */
-//ISR(INT0_vect){
-//	STATE = 1;
-//} // Ferro optical sensor
+// Optical Sensor for Magnetic Stage (OI)
+// PD0 (INT0) (Active Lo)
+ISR(INT0_vect){
 
-/*  PD1 = HE Sensor (Active Lo) or PORTA.7
-	Most likely just using port A.7 for this
-	Hall effect ISR */
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+	// LCDClear();
+	// LCDWriteString("INT0");
 
-/* PD2 = OR Sensor (Active Hi) */
+	STATE = 1; // will goto MAGNETIC_STAGE
+} // OI
+
+
+// Optical Sensor for Reflective Stage (OR)
+// PD2 (INT2) (Active Hi)
 ISR(INT2_vect){
-	STATE = 2;
-	// Want to go to do ISR 
-} // Reflective optical sensor
 
-/* PD3 = EX Sensor (Active Lo) */
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+	// LCDClear();
+	// LCDWriteString("INT2");
+
+	STATE = 2; // will goto REFLECTIVE_STAGE
+} // OR
+
+// Optical Sensor for Bucket Stage (EX)
+// PD2 (INT2) (Active Hi)
 ISR(INT3_vect){
-	STATE = 3;
-} // End optical sensor
 
-// When the button is pressed, set Escape GV to 1
+	//linked-queue debugging purposes
+	mTimer(20); // debounce
+	// LCDClear();
+	// LCDWriteString("INT3");
+
+	STATE = 3; // will goto BUCKET_STAGE
+} // EX
+
+// Pause button
 ISR(INT4_vect) {
+
+	//Home board debugging purposes
+	mTimer(20); // debounce
 	
 	if(STATE == 4) {
-		STATE = 0;
+		STATE = 0; // will goto POLLING_STAGE
 	}
 	else {
-		STATE = 4;
+		STATE = 4; // will goto PAUSE_STAGE
 	}
-} // Break and end interrupt
+} // Pause
 
 ISR(ADC_vect) {
 
