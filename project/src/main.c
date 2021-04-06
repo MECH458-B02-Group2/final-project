@@ -167,6 +167,9 @@ int main(int argc, char *argv[]){
 
 	// for TEST 3
 	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
+	if (reflect == ferro_t) {
+		pieces_reflect++;
+	}
 	LCDWriteIntXY(8, 1, pieces_reflect, 2);
 	LCDWriteStringXY(0, 0, "ACTIVE");
 	LCDWriteStringXY(6, 0, "          ");
