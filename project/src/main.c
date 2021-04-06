@@ -167,7 +167,6 @@ int main(int argc, char *argv[]){
 
 	// for TEST 3
 	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
-	pieces_reflect++;
 	LCDWriteIntXY(8, 1, pieces_reflect, 2);
 	LCDWriteStringXY(0, 0, "ACTIVE");
 	LCDWriteStringXY(6, 0, "          ");
@@ -186,11 +185,21 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
-	// When EX (End optical sensor) Sensor is triggered come here
-	// If the bucket is not in the correct position, rotate to the correct position
-	// Need to use the correct acceleration profile of the stepper to do this
-	PORTC = 0x08;
-	//Reset the state variable
+	
+	dequeue_link(&bucket_h, &reflect, &ferro_t);
+
+	// for TEST 3
+	pieces_ferro = lq_size(&bucket_h, &ferro_t);
+	pieces_ferro++;
+	LCDWriteIntXY(2, 1, pieces_ferro, 2);
+	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
+	LCDWriteIntXY(8, 1, pieces_reflect, 2);
+	LCDWriteStringXY(0, 0, "ACTIVE");
+	LCDWriteStringXY(6, 0, "          ");
+	LCDWriteStringXY(4, 1, "  ");
+	LCDWriteStringXY(10, 1, "      ");
+
+
 	STATE = 0;
 	goto POLLING_STAGE;
 
