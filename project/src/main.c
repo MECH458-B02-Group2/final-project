@@ -99,27 +99,13 @@ int main(int argc, char *argv[]){
 	MAGNETIC_STAGE:
 	// When OI (First optical sensor) Interrupt is triggered come here
 	// Do whatever is necessary HERE
-	PORTC = 0x01; // Just output pretty lights know you made it here
+	PORTC = 0x01; //  output pretty lights
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 
 	REFLECTIVE_STAGE:
-	// When OR (Second optical sensor) interrupt is triggered come here
-	// 5V/1024 = 0.00488V of resolution
-	
-	// See if sensor is still active high
-
-	// FOR TEST 1 - Reflective sensor
-	mTimer(100);
-	DC_Stop();
-	
-	// Display on LCD
-	LCDClear();
-	LCDWriteIntXY(0,1,reflect_val,3);
-	mTimer(5000);
-
-	PORTC = 0x04; // Just output pretty lights know you made it here
+	PORTC = 0x04; //  output pretty lights
 	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -365,13 +351,12 @@ void dequeue(link **h, link **t, link **deQueuedLink){
 	Most likely just using port A.7 for this
 	Hall effect ISR */
 
-/* PD2 = OR Sensor (Active Hi) */
+
 ISR(INT2_vect){
+	STATE = 2; // Enter state 2 after finished readings
 	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
-	STATE = 2;
 	ADCSRA |= _BV(ADSC); // Take another ADC reading
-	// Want to go to do ISR 
-} // Reflective optical sensor
+} // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
 
 /* PD3 = EX Sensor (Active Lo) */
 //ISR(INT3_vect){
@@ -381,7 +366,7 @@ ISR(INT2_vect){
 
 // When the button is pressed, set Escape GV to 1
 ISR(INT4_vect) {
-	while ((PINE & 0b00010000) == 0);		// ACTIVE-LO sits in loop until button is released (masking button bit)
+	while ((PINE & 0b00010000) == 0);	// ACTIVE-LO sits in loop until button is released (masking button bit)
 	
 	if(STATE == 0) {
 		STATE = 4;
@@ -402,8 +387,6 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 		// enqueue
-		// go to next state - Simon said the display state
-		// Mal and I decided that we already specify state 2 and we don't need to respecify
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
