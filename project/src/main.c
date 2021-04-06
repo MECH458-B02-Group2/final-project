@@ -24,6 +24,8 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
 	LCDWriteString("ACTIVE");
+	LCDWriteStringXY(0,1, "F:00  R:00  B:00");
+
 	DDRC = 0xFF;		// LED Output
 	PORTC = 0x00; // Set display off to start
 
@@ -121,7 +123,13 @@ int main(int argc, char *argv[]){
 	
 	MAGNETIC_STAGE:
 
+	initLink(&newLink);
+	// Set ferro_val in link element
 
+	enqueue_link(&bucket_h, &reflect, &ferro_t, &newLink);
+
+	int pieces_ferro;
+	pieces_ferro = lq_size(&bucket_h, &ferro_t);
 
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -195,17 +203,15 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
-	
-	LCDClear();
-	LCDWriteString("PAUSE"); // Output "PAUSE" to LCD
+	LCDWriteStringXY(5, 0, " ");
+	LCDWriteStringXY(0, 0, "PAUSE"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	while(STATE == 4); // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
-	LCDClear();
-	LCDWriteString("ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
+	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
 	// #endregion PAUSE STAGE ----------------------------------------------------------------------------//
@@ -387,13 +393,19 @@ void mTimer(int count) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
+// INITIALIZE LINK
+void initLink(link **newLink){
+	*newLink = malloc(sizeof(link));
+	(*newLink)->next = NULL;
+	return;
+} //initLink
+
 // LINKED QUEUE SETUP
 void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
 	*bucket_h = NULL;
 	*reflect = NULL;
 	*ferro_t = NULL;
 }
-
 
 // LINKED QUEUE SIZE
 // Description: This subroutine measures the number of links from one pointer to another. This will 
@@ -456,7 +468,7 @@ void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
 	link *temp;
 
 	if (*bucket_h != NULL){ // Ensure it is not an empty queue
-		*temp = *bucket_h; // Point temp to same link as head pointer (bucket_h)
+		temp = *bucket_h; // Point temp to same link as head pointer (bucket_h)
 		if (*reflect == *bucket_h) { // Shift reflect pointer if it points to same link as head pointer
 			*reflect = (*reflect)->next;
 		}
@@ -480,37 +492,35 @@ void dequeue_link(link **bucket_h, link **reflect, link **ferro_t){
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-/* PD0 = OI Sensor (Active Lo) */
-//ISR(INT0_vect){
-//	STATE = 1;
-//} // Ferro optical sensor
+// Optical Sensor for Magnetic Stage (OI)
+// PD0 (INT0) (Active Lo)
+ISR(INT0_vect){
+	STATE = 1; // will goto MAGNETIC_STAGE
+} // OI
 
-/*  PD1 = HE Sensor (Active Lo) or PORTA.7
-	Most likely just using port A.7 for this
-	Hall effect ISR */
 
-/* PD2 = OR Sensor (Active Hi) */
+// Optical Sensor for Reflective Stage (OR)
+// PD2 (INT2) (Active Hi)
 ISR(INT2_vect){
-	STATE = 2;
-	// Want to go to do ISR 
-} // Reflective optical sensor
+	STATE = 2; // will goto REFLECTIVE_STAGE
+} // OR
 
-/* PD3 = EX Sensor (Active Lo) */
-//ISR(INT3_vect){
-//	STATE = 3;
-	// Want to check if in the correct position for the bucket
-//} // End optical sensor
+// Optical Sensor for Bucket Stage (EX)
+// PD2 (INT2) (Active Hi)
+ISR(INT3_vect){
+	STATE = 3; // will goto BUCKET_STAGE
+} // EX
 
-// When the button is pressed, set Escape GV to 1
+// Pause button
 ISR(INT4_vect) {
 	
 	if(STATE == 4) {
-		STATE = 0;
+		STATE = 0; // will goto POLLING_STAGE
 	}
 	else {
-		STATE = 4;
+		STATE = 4; // will goto PAUSE_STAGE
 	}
-} // Break and end interrupt
+} // Pause
 
 ISR(ADC_vect) {
 
