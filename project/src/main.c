@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
 	LCDWriteString("ACTIVE");
-	LCDWriteStringXY(0,1, "F:00  R:00  B:00");
+	LCDWriteStringXY(0,1, "F:00  R:00");
 
 	DDRC = 0xFF;		// LED Output
 	PORTC = 0x00; // Set display off to start
@@ -50,6 +50,8 @@ int main(int argc, char *argv[]){
 	int reflect_val;
 
 	// Linked Queue
+	int pieces_reflect; // for TEST 3
+	int pieces_ferro; // for TEST 3
 	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
 	link *reflect; // Pointer to the last link that has received a reflective reading
 	link *ferro_t; // Pointer to the last link that has been sorted - also the linked queue tail
@@ -125,8 +127,14 @@ int main(int argc, char *argv[]){
 
 	enqueue_link(&bucket_h, &reflect, &ferro_t, &newLink);
 
-	int pieces_ferro;
+	// for TEST 3
 	pieces_ferro = lq_size(&bucket_h, &ferro_t);
+	pieces_ferro++;
+	LCDWriteIntXY(2, 1, pieces_ferro, 2);
+	LCDWriteStringXY(0, 0, "ACTIVE");
+	LCDWriteStringXY(6, 0, "          ");
+	LCDWriteStringXY(4, 1, "  ");
+	LCDWriteStringXY(10, 1, "      ");
 
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -149,6 +157,23 @@ int main(int argc, char *argv[]){
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
+
+	// Malaki - noticing that this while loop blocks other functionality
+	// eg. while there is a piece in front of the optical sensor, the system will not pause
+
+	if (reflect != ferro_t) {
+			next_link(&reflect);
+	}
+
+	// for TEST 3
+	pieces_reflect = lq_size(&bucket_h, &ferro_t) - lq_size(&reflect, &ferro_t);
+	pieces_reflect++;
+	LCDWriteIntXY(8, 1, pieces_reflect, 2);
+	LCDWriteStringXY(0, 0, "ACTIVE");
+	LCDWriteStringXY(6, 0, "          ");
+	LCDWriteStringXY(4, 1, "  ");
+	LCDWriteStringXY(10, 1, "      ");
+
 
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -178,8 +203,8 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
-	LCDWriteStringXY(5, 0, " ");
-	LCDWriteStringXY(0, 0, "PAUSE"); // Output "PAUSE" to LCD
+
+	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	while(STATE == 4); // Wait until pause button is pressed again
 	
@@ -473,8 +498,8 @@ ISR(INT0_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
-	LCDClear();
-	LCDWriteString("INT0");
+	// LCDClear();
+	// LCDWriteString("INT0");
 
 	STATE = 1; // will goto MAGNETIC_STAGE
 } // OI
@@ -486,8 +511,8 @@ ISR(INT2_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
-	LCDClear();
-	LCDWriteString("INT2");
+	// LCDClear();
+	// LCDWriteString("INT2");
 
 	STATE = 2; // will goto REFLECTIVE_STAGE
 } // OR
@@ -498,8 +523,8 @@ ISR(INT3_vect){
 
 	//linked-queue debugging purposes
 	mTimer(20); // debounce
-	LCDClear();
-	LCDWriteString("INT3");
+	// LCDClear();
+	// LCDWriteString("INT3");
 
 	STATE = 3; // will goto BUCKET_STAGE
 } // EX
@@ -507,7 +532,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	//linked-queue debugging purposes
+	//Home board debugging purposes
 	mTimer(20); // debounce
 	
 	if(STATE == 4) {
