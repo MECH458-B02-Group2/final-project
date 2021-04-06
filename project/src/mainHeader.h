@@ -9,6 +9,11 @@ volatile int STATE;
 volatile int PolePosition;
 volatile int CurPosition;
 int const delay = 20;
+//int const Bl_psn = 0;
+//int const St_psn = 50;
+//int const Wh_psn = 100;
+//int const Al_psn = 150;
+
 
 // DC Motor
 int const Speed = 0x50;
@@ -18,6 +23,10 @@ int const Speed = 0x50;
 	Steel    - 400 - 700
 	White    - 870 - 935
 	Black    - 936 - 980 */
+volatile unsigned int Alum;
+volatile unsigned int Steel;
+volatile unsigned int White;
+volatile unsigned int Black;
 int const ADC_min = 5;
 int const Al_low = 0;
 int const Al_high = 255;
@@ -31,6 +40,7 @@ int const Bl_high = 980;
 // Other
 volatile unsigned char ADC_result;
 volatile unsigned int ADC_result_flag;
+
 volatile unsigned int Escape; // Probably WONT NEED, was for the end routine interrupt for lab 4b
 
 //------------------------------------------------------------------------------------------------------//

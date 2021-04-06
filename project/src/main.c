@@ -48,8 +48,16 @@ int main(int argc, char *argv[]){
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
 	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
+
+	// Variables
 	int reflect_val;
-	int bucket_steps;
+	int bucket_psn;
+	int bucket_val;
+	int bucket_move;
+	Alum = 0;
+	Steel = 0;
+	White = 0;
+	Black = 0;
 
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -138,17 +146,6 @@ int main(int argc, char *argv[]){
 			reflect_val = ADC_result;
 		} // Overwrite previous value if bigger
 	}
-
-	// Determine which type of material
-	if(Al_low <= reflect_val && reflect_val <= Al_high) {
-		//add to link for aluminum
-	} else if(St_low <= reflect_val && reflect_val <= St_high) {
-		//add to link as steel
-	} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
-		//add to link as white
-	} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
-		// add to link as black
-	}
 	
 	// FOR TEST 1 - Reflective sensor
 	mTimer(500);
@@ -172,36 +169,50 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
+	bucket_psn = 0;
+	bucket_val = 0;
+	bucket_move = 0;
 	// When EX (End optical sensor) Sensor is triggered come here
-	// If the bucket is not in the correct position, rotate to the correct position
-	// Need to use the correct acceleration profile of the stepper to do this
 
-	// if() { // if bucket is not at correct stage
+	// Pull value from linked list tail
+	//bucket_val = linkedlist.->material;
+
+	// Determine which type of material
+	if(Al_low <= bucket_val && bucket_val <= Al_high) {
+		bucket_psn=0;
+		Alum++;
+	} else if(St_low <= bucket_val && bucket_val <= St_high) {
+		bucket_psn=50;
+		Steel++;
+	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
+		bucket_psn=100;
+		White++;
+	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
+		bucket_psn=150;
+		Black++;
+	}
+
+	// Dequeue here???
+	// Move bucket to right position 
+	// Can add direction later, Nigel had a good idea for it to keep track of directionality
+	// Only really matters when its the same distance either way
+	// Table is stopped either way so does it really matter?
+	// CW/CCW might be backwards
+	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		DC_Stop();
-		// bucket_steps = Det_Steps();
-		// or
-		// Use CurPosition to determine if rotation is required:
-		// Can just do a remainder function for how many steps are in a full revolution to figure out where the stepper is at - then
-		// Determine if the desired position is faster going clockwise or CCW
+		// 200 steps per revolution -> 1.8 degrees per rev
+		
+		bucket_move = bucket_psn - (CurPosition%200));
+		if(bucket_move == -50 || bucket_move == 150) {
+			stepccw(50);
+		} else if(bucket_move == 50 || bucket_move == -150){
+			stepcw(50);
+		} else if(abs(bucket_move) == 100){
+			stepccw(100);
+		}
+	}
 
-		// So something like
-		// current material = list.current material -> don't need this, just helps with understanding
-		// remainder = CurPosition/Steps in 360
-		// black = 0
-		// white = 70
-		// steel = 140
-		// aluminum = 210
-		// if(CurPosition-70*current material>CurPosition + 70*current material) {
-		//	stepccw(CurPosition-70*current material)
-		// }
-		// else {
-		//	stepccw(CurPosition-70*current material)
-		// }
-		// Something like that, needs some work but good idea
-
-	// }
-
-
+	DC_Start();
 	PORTC = 0x08;
 	//Reset the state variable
 	STATE = 0;
