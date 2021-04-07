@@ -469,7 +469,8 @@ ISR(INT3_vect){
 	// Pull value from linked list tail
 	//bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
 
-	bucket_val = reflect_val; // TESTING CODE _ TO BE DELETED
+	// TESTING CODE _ TO BE DELETED
+	bucket_val = reflect_val;
 	// Determine which type of material
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
 		bucket_psn=0;
