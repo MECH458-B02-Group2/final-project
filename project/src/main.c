@@ -45,9 +45,9 @@ int main(int argc, char *argv[]){
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
-	ADMUX |= _BV(ADLAR) | _BV(REFS0); // Read Technical Manual & Complete Comment
-
-	// Variables
+	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
+	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
+	// ADMUX |= _BV(ADLAR); // Don't want data to be opposite justified
 	int reflect_val;
 	int bucket_psn;
 	int bucket_val;
@@ -64,6 +64,7 @@ int main(int argc, char *argv[]){
 	lq_setup(&bucket_h, &reflect, &ferro_t); // Set all pointers to NULL
 	link *newLink; // temp link which will be allocated memory with initLink() before enqueueLink()
 	newLink = NULL; // set newLink to NULL
+
 
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
@@ -148,19 +149,6 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	// When OR (Second optical sensor) interrupt is triggered come here
-	// Read ADC values, while the value is lower than the previous value overwrite the previous value
-	reflect_val = 0; // Temporary overwrite variable
-	// See if sensor is still active low
-	while((PIND & 0b00000100) == 0b00000100) { 
-		ADCSRA |= _BV(ADSC); // Take another ADC reading
-		if (ADC_result>reflect_val) {
-			reflect_val = ADC_result;
-		} // Overwrite previous value if bigger
-	}
-	// Malaki - noticing that this while loop blocks other functionality
-	// eg. while there is a piece in front of the optical sensor, the system will not pause
-
 	// Reflective Stage Linked Queue
 	// Move the reflect pointer to next link if there is already a reading in the current link and if it
 	// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
@@ -169,8 +157,7 @@ int main(int argc, char *argv[]){
 	}
 
 	reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
-
-
+	//Reset the state variable
 	STATE = 0;
 	goto POLLING_STAGE;
 
@@ -519,37 +506,21 @@ void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
 // Optical Sensor for Magnetic Stage (OI)
 // PD0 (INT0) (Active Lo)
 ISR(INT0_vect){
-
-	//linked-queue debugging purposes
-	mTimer(20); // debounce
-	// LCDClear();
-	// LCDWriteString("INT0");
-
 	STATE = 1; // will goto MAGNETIC_STAGE
 } // OI
 
 
-// Optical Sensor for Reflective Stage (OR)
-// PD2 (INT2) (Active Hi)
 ISR(INT2_vect){
-
-	//linked-queue debugging purposes
-	mTimer(20); // debounce
-	// LCDClear();
-	// LCDWriteString("INT2");
-
+	STATE = 2; // Enter state 2 after finished readings
+	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
+	ADCSRA |= _BV(ADSC); // Take another ADC reading
+} // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
 	STATE = 2; // will goto REFLECTIVE_STAGE
 } // OR
 
 // Optical Sensor for Bucket Stage (EX)
 // PD2 (INT2) (Active Hi)
 ISR(INT3_vect){
-
-	//linked-queue debugging purposes
-	mTimer(20); // debounce
-	// LCDClear();
-	// LCDWriteString("INT3");
-
 	STATE = 3; // will goto BUCKET_STAGE
 } // EX
 
@@ -569,8 +540,15 @@ ISR(INT4_vect) {
 
 ISR(ADC_vect) {
 
-	ADC_result = ADCH; // Store the ADC reading in the global variable
-	ADC_result_flag = 1; // Indicate that there is a new ADC result to change PWM frequency and to be displayed on LEDs
+	if(ADC<reflect_val){
+		reflect_val = ADC;
+	} // Find the lowest ADC value
+	
+	if((PIND & 0b00000100) == 0b00000100) { 
+		ADCSRA |= _BV(ADSC); // Take another ADC reading
+	} else{
+		// enqueue
+	} // Continue taking readings and then add to the linked list
 } // ADC end
 
 /* PE5 = RampDown (Active Lo) */
