@@ -9,6 +9,11 @@ volatile int STATE;
 volatile int PolePosition;
 volatile int CurPosition;
 int const delay = 20;
+//int const Bl_psn = 0;
+//int const St_psn = 50;
+//int const Wh_psn = 100;
+//int const Al_psn = 150;
+
 
 // DC Motor
 int const Speed = 0x80;
@@ -18,6 +23,11 @@ int const Speed = 0x80;
 	Steel    - 400 - 700
 	White    - 870 - 935
 	Black    - 936 - 980 */
+volatile unsigned int Alum;
+volatile unsigned int Steel;
+volatile unsigned int White;
+volatile unsigned int Black;
+int const ADC_min = 5;
 int const Al_low = 0;
 int const Al_high = 255;
 int const St_low = 400;
@@ -37,7 +47,7 @@ volatile unsigned int Escape; // Probably WONT NEED, was for the end routine int
 
 // Linked Queue
 typedef struct {
-  int ferro_val; // Need to distinguish between aluminum and steel
+	int ferro_val; // Need to distinguish between aluminum and steel
 	int reflect_val; // Need to distinguish between white and black delrin
 } element;
 

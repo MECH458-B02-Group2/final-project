@@ -47,8 +47,15 @@ int main(int argc, char *argv[]){
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
 	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
 	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
-	// ADMUX |= _BV(ADLAR); // Don't want data to be opposite justified
-	int reflect_val;
+
+	// Variable declarations
+	int bucket_psn;
+	int bucket_val;
+	int bucket_move;
+	Alum = 0;
+	Steel = 0;
+	White = 0;
+	Black = 0;
 
 	// Linked Queue
 	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
@@ -123,7 +130,7 @@ int main(int argc, char *argv[]){
 	MAGNETIC_STAGE:
 
 	// take reading
-
+	// MOVE TO ISR(OPTICAL SENSOR)*******************************************************************************
 	// Magnetic Stage Linked Queue
 	// Enqueue new link each time a ferromagnetic reading is taken
 	initLink(&newLink);
@@ -131,7 +138,7 @@ int main(int argc, char *argv[]){
 
 	ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
 
-	STATE = 0;
+	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
 	// #endregion MAGNETIC STAGE -------------------------------------------------------------------------//
@@ -145,13 +152,15 @@ int main(int argc, char *argv[]){
 	// Reflective Stage Linked Queue
 	// Move the reflect pointer to next link if there is already a reading in the current link and if it
 	// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
+
+	// MOVE TO ISR(ADC COMPLETE)*******************************************************************************
 	if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
 		nextLink(&reflect); // Move reflect pointer to next link
 	}
 
 	reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
-	//Reset the state variable
-	STATE = 0;
+	
+	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
 	// #endregion REFLECTIVE STAGE -----------------------------------------------------------------------//
@@ -162,8 +171,54 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
+	bucket_psn = 0;
+	bucket_val = 0;
+	bucket_move = 0;
+	// When EX (End optical sensor) Sensor is triggered come here
+
+	// Pull value from linked list tail
+	//bucket_val = linkedlist.->material;
+
+	// Determine which type of material
+	if(Al_low <= bucket_val && bucket_val <= Al_high) {
+		bucket_psn=0;
+		Alum++;
+	} else if(St_low <= bucket_val && bucket_val <= St_high) {
+		bucket_psn=50;
+		Steel++;
+	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
+		bucket_psn=100;
+		White++;
+	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
+		bucket_psn=150;
+		Black++;
+	}
+
+	// Dequeue here???
+	// Move bucket to right position 
+	// Can add direction later, Nigel had a good idea for it to keep track of directionality
+	// Only really matters when its the same distance either way
+	// Table is stopped either way so does it really matter?
+	// CW/CCW might be backwards
+	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+		DC_Stop();
+		// 200 steps per revolution -> 1.8 degrees per rev
+		
+		bucket_move = bucket_psn - (CurPosition%200));
+		if(bucket_move == -50 || bucket_move == 150) {
+			stepccw(50);
+		} else if(bucket_move == 50 || bucket_move == -150){
+			stepcw(50);
+		} else if(abs(bucket_move) == 100){
+			stepccw(100);
+		}
+	}
+
+	DC_Start();
+	PORTC = 0x08;
+	//Reset the state variable
 	
-	// Sorting algorithm
+	// Sorting algorithm - (Start of Malaki's code)
 
 	// Bucket Stage Linked Queue
 	// Dequeue link after the reading have been extracted for the sorting algorithm
@@ -314,15 +369,14 @@ void stepccw (int step) {
 // #region 
 
 void DC_Start(void) {
-	// Start running the motor
 	PORTB = 0x07; // Motor running forward
 	return;
 } // Motor start
 
 void DC_Stop(void) {
-
 	PORTB = 0x0F; // Brake
 	mTimer(10); // wait 10 ms
+	PORTB = 0x00; // Motor off
 	return;
 } // Motor stop
 
@@ -334,7 +388,6 @@ void DC_Stop(void) {
 // #region
 
 void PWM(void) {
-	
 	TCCR0A|= _BV(WGM00); // Enable fast PWM
 	TCCR0A|= _BV(WGM01); // Enable fast PWM
 	
@@ -462,8 +515,6 @@ ISR(INT2_vect){
 	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 	ADCSRA |= _BV(ADSC); // Take another ADC reading
 } // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
-	STATE = 2; // will goto REFLECTIVE_STAGE
-} // OR
 
 // Optical Sensor for Bucket Stage (EX)
 // PD2 (INT2) (Active Hi)
