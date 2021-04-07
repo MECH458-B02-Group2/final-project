@@ -47,7 +47,7 @@ volatile unsigned int Escape; // Probably WONT NEED, was for the end routine int
 
 // Linked Queue
 typedef struct {
-  int ferro_val; // Need to distinguish between aluminum and steel
+	int ferro_val; // Need to distinguish between aluminum and steel
 	int reflect_val; // Need to distinguish between white and black delrin
 } element;
 
