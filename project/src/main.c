@@ -54,6 +54,7 @@ int main(int argc, char *argv[]){
 	White = 0;
 	Black = 0;
 
+//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Linked Queue
 	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
 	link *reflect; // Pointer to the last link that has received a reflective reading
@@ -127,7 +128,8 @@ int main(int argc, char *argv[]){
 	MAGNETIC_STAGE:
 
 	// take reading
-	// MOVE TO ISR(OPTICAL SENSOR)*******************************************************************************
+//**********************MOVE TO ISR(OPTICAL SENSOR)**************************************************************************************************************
+//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Magnetic Stage Linked Queue
 	// Enqueue new link each time a ferromagnetic reading is taken
 	initLink(&newLink);
@@ -146,17 +148,6 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	// Reflective Stage Linked Queue
-	// Move the reflect pointer to next link if there is already a reading in the current link and if it
-	// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
-
-	// MOVE TO ISR(ADC COMPLETE)*******************************************************************************
-	if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
-		nextLink(&reflect); // Move reflect pointer to next link
-	}
-
-	reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
-	
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -168,7 +159,6 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
-
 	PORTC = 0x08;
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
@@ -469,8 +459,9 @@ ISR(INT3_vect){
 	bucket_val = 0;
 	bucket_move = 0;
 
+//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Pull value from linked list tail
-	bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
+	//bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
 
 	// Determine which type of material
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
@@ -486,13 +477,12 @@ ISR(INT3_vect){
 		bucket_psn=150;
 		Black++;
 	}
-
+//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Sorting algorithm - (Start of Malaki's code)
 	// Bucket Stage Linked Queue
 	// Dequeue link after the reading have been extracted for the sorting algorithm
-	dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
+	//dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
 	// End of Malaki's code
-
 
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		DC_Stop();
@@ -535,7 +525,16 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
+//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
+		// Reflective Stage Linked Queue
+		// Move the reflect pointer to next link if there is already a reading in the current link and if it
+		// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
 		// enqueue
+		if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
+		nextLink(&reflect); // Move reflect pointer to next link
+		}
+
+		reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
