@@ -39,6 +39,9 @@ int const Bl_high = 980;
 
 // Other
 volatile unsigned int reflect_val;
+volatile unsigned int bucket_psn;
+volatile unsigned int bucket_val;
+volatile unsigned int bucket_move;
 volatile unsigned int Escape; // Probably WONT NEED, was for the end routine interrupt for lab 4b
 
 //------------------------------------------------------------------------------------------------------//

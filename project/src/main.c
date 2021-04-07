@@ -49,9 +49,6 @@ int main(int argc, char *argv[]){
 	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
 
 	// Variable declarations
-	int bucket_psn;
-	int bucket_val;
-	int bucket_move;
 	Alum = 0;
 	Steel = 0;
 	White = 0;
@@ -171,60 +168,9 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
-	bucket_psn = 0;
-	bucket_val = 0;
-	bucket_move = 0;
-	// When EX (End optical sensor) Sensor is triggered come here
 
-	// Pull value from linked list tail
-	//bucket_val = linkedlist.->material;
-
-	// Determine which type of material
-	if(Al_low <= bucket_val && bucket_val <= Al_high) {
-		bucket_psn=0;
-		Alum++;
-	} else if(St_low <= bucket_val && bucket_val <= St_high) {
-		bucket_psn=50;
-		Steel++;
-	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
-		bucket_psn=100;
-		White++;
-	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
-		bucket_psn=150;
-		Black++;
-	}
-
-	// Dequeue here???
-	// Move bucket to right position 
-	// Can add direction later, Nigel had a good idea for it to keep track of directionality
-	// Only really matters when its the same distance either way
-	// Table is stopped either way so does it really matter?
-	// CW/CCW might be backwards
-	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		DC_Stop();
-		// 200 steps per revolution -> 1.8 degrees per rev
-		
-		bucket_move = bucket_psn - (CurPosition%200));
-		if(bucket_move == -50 || bucket_move == 150) {
-			stepccw(50);
-		} else if(bucket_move == 50 || bucket_move == -150){
-			stepcw(50);
-		} else if(abs(bucket_move) == 100){
-			stepccw(100);
-		}
-	}
-
-	DC_Start();
 	PORTC = 0x08;
-	//Reset the state variable
-	
-	// Sorting algorithm - (Start of Malaki's code)
-
-	// Bucket Stage Linked Queue
-	// Dequeue link after the reading have been extracted for the sorting algorithm
-	dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
-
-	STATE = 0;
+	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
@@ -504,10 +450,10 @@ void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
 // #region 
 
 // Optical Sensor for Magnetic Stage (OI)
-// PD0 (INT0) (Active Lo)
+// 
 ISR(INT0_vect){
 	STATE = 1; // will goto MAGNETIC_STAGE
-} // OI
+} // PD0 = OI (INT0) (Active Lo)
 
 
 ISR(INT2_vect){
@@ -517,10 +463,54 @@ ISR(INT2_vect){
 } // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
 
 // Optical Sensor for Bucket Stage (EX)
-// PD2 (INT2) (Active Hi)
 ISR(INT3_vect){
 	STATE = 3; // will goto BUCKET_STAGE
-} // EX
+	bucket_psn = 0;
+	bucket_val = 0;
+	bucket_move = 0;
+
+	// Pull value from linked list tail
+	bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
+
+	// Determine which type of material
+	if(Al_low <= bucket_val && bucket_val <= Al_high) {
+		bucket_psn=0;
+		Alum++;
+	} else if(St_low <= bucket_val && bucket_val <= St_high) {
+		bucket_psn=50;
+		Steel++;
+	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
+		bucket_psn=100;
+		White++;
+	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
+		bucket_psn=150;
+		Black++;
+	}
+
+	// Sorting algorithm - (Start of Malaki's code)
+	// Bucket Stage Linked Queue
+	// Dequeue link after the reading have been extracted for the sorting algorithm
+	dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
+	// End of Malaki's code
+
+
+	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+		DC_Stop();
+		// 200 steps per revolution -> 1.8 degrees per rev
+		bucket_move = bucket_psn - (CurPosition%200));
+		if(bucket_move == -50 || bucket_move == 150) {
+			stepccw(50);
+		} else if(bucket_move == 50 || bucket_move == -150){
+			stepcw(50);
+		} else if(abs(bucket_move) == 100){
+			stepccw(100);
+		}
+	} // CW/CCW might be backwards
+	// Can add direction later, Nigel had a good idea for it to keep track of directionality
+	// Only really matters when its the same distance either way
+	// Table is stopped either way so does it really matter?
+	DC_Start();
+} // PD3 = EX Sensor (Active Lo)
 
 // Pause button
 ISR(INT4_vect) {

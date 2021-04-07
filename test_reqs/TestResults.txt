@@ -14,6 +14,12 @@ Display doesn't clear
 Aluminum goes through
 Didn't clear display
 
+4th attempt was a SUCCESS
+Outputted 20 for an aluminum part and 960 for a black part
+- ADC is working correctly
+- 10 bit is working correctly
+- Reflective stage is working correctly 
+
 Test 2
 LCD displays active
 Stepper homes
