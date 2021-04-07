@@ -28,3 +28,13 @@ Pause displays pause
 Button can be pushed over and over toggling the LCD
 
 SUCCESS
+
+Test 3
+
+
+
+SUCCESS
+
+Notes:
+ - Asked exactly what we actually need the magnetic stage for if we can sort without it
+ ANS: 

@@ -16,7 +16,7 @@ int const delay = 20;
 
 
 // DC Motor
-int const Speed = 0x80;
+int const Speed = 0x60;
 
 // Reflective Sensor Values
 /*  Aluminum - < 255
