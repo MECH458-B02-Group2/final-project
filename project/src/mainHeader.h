@@ -37,12 +37,11 @@ int const Wh_high = 935;
 int const Bl_low = 936;
 int const Bl_high = 980;
 
-// Other
+// Sorting values
 volatile unsigned int reflect_val;
 volatile unsigned int bucket_psn;
 volatile unsigned int bucket_val;
 volatile unsigned int bucket_move;
-volatile unsigned int Escape; // Probably WONT NEED, was for the end routine interrupt for lab 4b
 
 //------------------------------------------------------------------------------------------------------//
 // TYPE DECLARATIONS -----------------------------------------------------------------------------------//
