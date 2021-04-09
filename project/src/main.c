@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
-
+ 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	while(STATE == 4); // Wait until pause button is pressed again
