@@ -54,13 +54,8 @@ int main(int argc, char *argv[]){
 	White = 0;
 	Black = 0;
 
-//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Linked Queue
-	link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
-	link *reflect; // Pointer to the last link that has received a reflective reading
-	link *ferro_t; // Pointer to the last link that has been sorted - also the linked queue tail
-	lq_setup(&bucket_h, &reflect, &ferro_t); // Set all pointers to NULL
-	link *newLink; // temp link which will be allocated memory with initLink() before enqueueLink()
+	lq_setup(&bucket_h, &reflect_t); // Set all pointers to NULL
 	newLink = NULL; // set newLink to NULL
 
 
@@ -129,15 +124,6 @@ int main(int argc, char *argv[]){
 	
 	MAGNETIC_STAGE:
 
-	// take reading
-//**********************MOVE TO ISR(OPTICAL SENSOR)**************************************************************************************************************
-//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
-	// Magnetic Stage Linked Queue
-	// Enqueue new link each time a ferromagnetic reading is taken
-	//initLink(&newLink);
-	//enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
-
-	//ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -151,9 +137,6 @@ int main(int argc, char *argv[]){
 	REFLECTIVE_STAGE:
 	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
 	LCDWriteIntXY(0,1,reflect_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	DC_Stop(); // TESTING CODE _ TO BE DELETED
-	mTimer(1000); // TESTING CODE _ TO BE DELETED
-	DC_Start(); // TESTING CODE _ TO BE DELETED
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -370,10 +353,9 @@ void mTimer(int count) {
 
 // LINKED QUEUE SETUP
 // Description: This subroutine sets all linked queue pointers to NULL.
-void lq_setup(link **bucket_h, link **reflect, link **ferro_t) {
+void lq_setup(link **bucket_h, link **reflect_t) {
 	*bucket_h = NULL;
-	*reflect = NULL;
-	*ferro_t = NULL;
+	*reflect_t = NULL;
 	return;
 }
 
@@ -384,57 +366,44 @@ void initLink(link **newLink){
 	*newLink = malloc(sizeof(link)); // Allocate memory
 	(*newLink)->next = NULL; // set next link as NULL
 	// Set values to negative (to determine if the link has received a specific reading yet)
-	(*newLink)->e.reflect_val = -1;
-	(*newLink)->e.ferro_val = -1;
+
+	// (*newLink)->e.reflect_val = -1; // might still need
+
 	return;
 } //initLink
 
 // ENQUEUE
 // Description: This subroutine enqueues a new link, which the tail (ferro_t) will always point to. 
 //              This occurs when there is a ferromagnetic reading.
-void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink){
+void enqueueLink(link **bucket_h, link **reflect_t, link **newLink){
 
-	if (*ferro_t != NULL){ // If linked queue is not empty
-		(*ferro_t)->next = *newLink; // append newLink
-		*ferro_t = *newLink; // move ferro_t pointer to new link
+	if (*reflect_t != NULL){ // If linked queue is not empty
+		(*reflect_t)->next = *newLink; // append newLink
+		*reflect_t = *newLink; // move reflect_t pointer to new link
 	}
 	else{ // If linked queue is empty, move all pointers to newLink
 		*bucket_h = *newLink;
-		*reflect = *newLink;
-		*ferro_t = *newLink;
+		*reflect_t = *newLink;
 	}
 	return;
 }/*enqueueLink*/
 
-
-// NEXT LINK
-// Description: This subroutine points the reflect pointer to the next link in the queue.
-//              This occurs when there is a reflective reading
-void nextLink(link **reflect) {
-	*reflect = (*reflect)->next; // move reflect pointer to next link
-	return;
-}
-
 // DEQUEUE
 // Description: This subroutine dequeues the link pointed to by the head (bucket_h). This occurs 
 //              during the bucket stage when the piece is sorted.
-void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
+void dequeueLink(link **bucket_h, link **reflect_t){
 
 	link *temp;
 
 	if (*bucket_h != NULL){ // Ensure it is not an empty queue
 		temp = *bucket_h; // Point temp to same link as head pointer (bucket_h)
-		if (*reflect == *bucket_h) { // Shift reflect pointer if it points to same link as head pointer
-			*reflect = (*reflect)->next;
-		}
 		*bucket_h = (*bucket_h)->next; // Shift head pointer
 		free(temp); // Free memory of dequeued link
 	}
 
 	// If it becomes an empty queue, set other pointers to NULL
 	if (*bucket_h == NULL) {
-		*reflect = NULL;
-		*ferro_t = NULL;
+		*reflect_t = NULL;
 	}
 	
 	return;
@@ -467,11 +436,11 @@ ISR(INT3_vect){
 	bucket_val = 0;
 	bucket_move = 0;
 
-//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
-	// Pull value from linked list tail
-	//bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
+	// Pull value from linked list head
+	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+	// Dequeue link after the reading have been extracted for the sorting algorithm
+	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
-	bucket_val = reflect_val; // TESTING CODE _ TO BE DELETED
 	// Determine which type of material
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
 		bucket_psn=0;
@@ -494,12 +463,6 @@ ISR(INT3_vect){
 		LCDClear(); // TESTING CODE _ TO BE DELETED
 		LCDWriteString("BLACK"); // TESTING CODE _ TO BE DELETED
 	}
-//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
-	// Sorting algorithm - (Start of Malaki's code)
-	// Bucket Stage Linked Queue
-	// Dequeue link after the reading have been extracted for the sorting algorithm
-	//dequeueLink(&bucket_h, &reflect, &ferro_t); // Dequeue the link pointed to by the head (bucket_h)
-	// End of Malaki's code
 
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		DC_Stop();
@@ -541,16 +504,11 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
-//**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 		// Reflective Stage Linked Queue
-		// Move the reflect pointer to next link if there is already a reading in the current link and if it
-		// is not pointing to the same link as the tail (ferro_t) (which would result in reflect pointing to NULL)
-		// enqueue
-		//if (reflect->e.reflect_val >= 0 && reflect != ferro_t) {
-		//nextLink(&reflect); // Move reflect pointer to next link
-		//}
-
-		//reflect->e.reflect_val = reflect_val; // Store reflect_val in link element
+		// Enqueue new link each time a reflective reading is taken
+		initLink(&newLink);
+		newLink->reflect_val = reflect_val;
+		enqueueLink(&bucket_h, &reflect_t, &newLink);
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
