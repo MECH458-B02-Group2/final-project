@@ -473,7 +473,7 @@ ISR(INT3_vect){
 	}
 
 	// For ease of use with potentiometer
-	LCDWriteIntXY(0, 1, bucket_val, 4);
+	// LCDWriteIntXY(0, 1, bucket_val, 4);
 
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		DC_Stop();
