@@ -43,21 +43,6 @@ volatile unsigned int bucket_val;
 volatile unsigned int bucket_move;
 
 //------------------------------------------------------------------------------------------------------//
-// TYPE DECLARATIONS -----------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------//
-
-// Linked Queue
-typedef struct {
-	int ferro_val; // Need to distinguish between aluminum and steel
-	int reflect_val; // Need to distinguish between white and black delrin
-} element;
-
-typedef struct link{
-	element e;
-	struct link *next;
-} link;
-
-//------------------------------------------------------------------------------------------------------//
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
@@ -80,10 +65,22 @@ void PWM(void);
 void mTimer(int count);
 
 //------------------------------------------------------------------------------------------------------//
+// LINKED QUEUE ----------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------//
+
+typedef struct link{
+	int reflect_val;
+	struct link *next;
+} link;
+
+link *bucket_h; // Pointer to the last link that has received a ferromagnetic reading - also the linked queue head
+link *reflect_t; // Pointer to the last link that has been sorted - also the linked queue tail
+link *newLink; // temp link which will be allocated memory with initLink() before enqueueLink()
+
+//------------------------------------------------------------------------------------------------------//
 // LINKED QUEUE SUBROUTINES ----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
-void lq_setup(link **bucket_h, link **reflect, link **ferro_t);
+void lq_setup(link **bucket_h, link **reflect_t);
 void initLink(link **newLink);
-void enqueueLink(link **bucket_h, link **reflect, link **ferro_t, link **newLink);
-void nextLink(link **reflect);
-void dequeueLink(link **bucket_h, link **reflect, link **ferro_t);
+void enqueueLink(link **bucket_h, link **reflect_t, link **newLink);
+void dequeueLink(link **bucket_h, link **reflect_t);
