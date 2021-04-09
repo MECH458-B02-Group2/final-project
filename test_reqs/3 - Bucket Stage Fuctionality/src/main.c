@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
 	CLKPR = 0x80;
 	CLKPR = 0x01;		//  sets system clock to 8MHz
 	TCCR1B |= _BV(CS11); // Set the timer 1 prescaler to 8 --> f=1MHz
-	TCCR0B |= _BV(CS01) | _BV(CS00); // Set the timer prescalar to 1/64 --> (8MHz/(N*256) (Recommended from Simon -> previous was 1/8)
+	TCCR0B |= _BV(CS01); // Set the timer prescalar to 8 --> 3.9 kHz (8MHz/(N*256)
 	
 	// LEDs and LCD module (PORTC)
 	InitLCD(LS_BLINK|LS_ULINE);
@@ -31,12 +31,12 @@ int main(int argc, char *argv[]){
 	// External Interrupts
 	cli();		// Disables all interrupts
 
-	// EIMSK |= (_BV(INT0)); // enable INT2
+	EIMSK |= (_BV(INT0)); // enable INT0
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
 
-	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
+	EICRA |= _BV(ISC01); // INT) Falling edge - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
 	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
-	step_home(); // Working correctly as per TR3
+	step_home();
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -134,10 +134,11 @@ int main(int argc, char *argv[]){
 //**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 	// Magnetic Stage Linked Queue
 	// Enqueue new link each time a ferromagnetic reading is taken
-	//initLink(&newLink);
-	//enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
+	initLink(&newLink);
+	enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
 
-	//ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
+	ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
+	PORTC = 0x02;
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -149,11 +150,7 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,1,reflect_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	DC_Stop(); // TESTING CODE _ TO BE DELETED
-	mTimer(1000); // TESTING CODE _ TO BE DELETED
-	DC_Start(); // TESTING CODE _ TO BE DELETED
+	PORTC = 0x04;
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -165,6 +162,7 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
+	PORTC = 0x08;
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -198,7 +196,7 @@ int main(int argc, char *argv[]){
 	END_STAGE:
 
 	// The closing STATE ... how would you get here?
-	//PORTC = 0xF0;	// Indicates this state is active
+	PORTC = 0xF0;	// Indicates this state is active
 	// Stop everything here...'MAKE SAFE'
 	// cli();
 	return(0);
@@ -227,7 +225,7 @@ void step_home(void) {
 	PolePosition = 0;
 	CurPosition = 0;
 
-} // Homing Function - validated
+} // Homing Function
 
 void stepcw (int step) {
 	PolePosition++; // move the current position forward one
@@ -448,10 +446,10 @@ void dequeueLink(link **bucket_h, link **reflect, link **ferro_t){
 // #region 
 
 // Optical Sensor for Magnetic Stage (OI)
-// s
-//ISR(INT0_vect){
-	// STATE = 1; // will goto MAGNETIC_STAGE
-//} // PD0 = OI (INT0) (Active Lo)
+// 
+ISR(INT0_vect){
+	STATE = 1; // will goto MAGNETIC_STAGE
+} // PD0 = OI (INT0) (Active Lo)
 
 
 ISR(INT2_vect){
@@ -471,7 +469,8 @@ ISR(INT3_vect){
 	// Pull value from linked list tail
 	//bucket_val = reflect->e.reflect_val; // Store reflect_val in link element
 
-	bucket_val = reflect_val; // TESTING CODE _ TO BE DELETED
+	// TESTING CODE _ TO BE DELETED
+	bucket_val = reflect_val;
 	// Determine which type of material
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
 		bucket_psn=0;
@@ -541,6 +540,8 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
+		LCDWriteIntXY(0,1,reflect_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+
 //**********************LINKED LIST IMPLEMENTATION***************************************************************************************************************
 		// Reflective Stage Linked Queue
 		// Move the reflect pointer to next link if there is already a reading in the current link and if it
