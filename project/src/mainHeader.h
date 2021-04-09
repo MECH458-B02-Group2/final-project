@@ -9,33 +9,23 @@ volatile int STATE;
 volatile int PolePosition;
 volatile int CurPosition;
 int const delay = 20;
-//int const Bl_psn = 0;
-//int const St_psn = 50;
-//int const Wh_psn = 100;
-//int const Al_psn = 150;
-
 
 // DC Motor
 int const Speed = 0x60;
 
 // Reflective Sensor Values
-/*  Aluminum - < 255
-	Steel    - 400 - 700
-	White    - 870 - 935
-	Black    - 936 - 980 */
 volatile unsigned int Alum;
 volatile unsigned int Steel;
 volatile unsigned int White;
 volatile unsigned int Black;
-int const ADC_min = 5;
 int const Al_low = 0;
-int const Al_high = 255;
-int const St_low = 400;
-int const St_high = 700;
-int const Wh_low = 870;
-int const Wh_high = 935;
-int const Bl_low = 936;
-int const Bl_high = 980;
+int const Al_high = 327;	// 255 was OG
+int const St_low = 328;		// 400 was OG
+int const St_high = 785;	// 700 was OG
+int const Wh_low = 786;		// 870 was OG
+int const Wh_high = 935;	// No changes
+int const Bl_low = 936;		// No changes
+int const Bl_high = 1023;	// 980 was OG
 
 // Sorting values
 volatile unsigned int reflect_val;

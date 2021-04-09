@@ -31,10 +31,12 @@ int main(int argc, char *argv[]){
 	// External Interrupts
 	cli();		// Disables all interrupts
 
+	// EIMSK |= (_BV(INT0)); // enable INT2
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
 
+	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
 	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
@@ -136,7 +138,7 @@ int main(int argc, char *argv[]){
 	//enqueueLink(&bucket_h, &reflect, &ferro_t, &newLink);
 
 	//ferro_t->e.ferro_val = 1; // = ferro_val; // Store ferro_val in link element
-	//STATE = 0; //Reset the state variable
+	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
 	// #endregion MAGNETIC STAGE -------------------------------------------------------------------------//
