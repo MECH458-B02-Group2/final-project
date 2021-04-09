@@ -260,10 +260,14 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 		
+		if(step == 1){
+		mTimer(20); // Step Delay
+		} else if(step == 50){
+			mTimer(fifty[j]);
+		} else if(step == 100){
+			mTimer(onehundred[j]);
+		} // Stepper acceleration and deceleration 
 		CurPosition++;
-		
-		mTimer(delay); // Step Delay
-		
 	} // for
 } // stepcw
 
@@ -297,11 +301,15 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
-		
+
+		if(step == 1){
+		mTimer(20); // Step Delay
+		} else if(step == 50){
+			mTimer(fifty[j]);
+		} else if(step == 100){
+			mTimer(onehundred[j]);
+		} // Stepper acceleration and deceleration 
 		CurPosition--;
-		
-		mTimer(delay); // StepDelay
-		
 	} // for
 } // stepccw
 
