@@ -472,6 +472,9 @@ ISR(INT3_vect){
 		LCDWriteString("BLACK"); // TESTING CODE _ TO BE DELETED
 	}
 
+	// For ease of use with potentiometer
+	LCDWriteIntXY(0, 1, bucket_val, 4);
+
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		DC_Stop();
 		// 200 steps per revolution -> 1.8 degrees per rev
