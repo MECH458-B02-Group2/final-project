@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
-	step_home(); // Working correctly as per TR3
+	//step_home(); // Working correctly as per TR3
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 	// Description:
             
 	POLLING_STAGE:
-	
+
 	switch(STATE){
 		case (0) :
 		goto POLLING_STAGE;
@@ -135,8 +135,8 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,1,reflect_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDClear(); // TESTING CODE _ TO BE DELETED
+	LCDWriteString("Reflective"); // TESTING CODE _ TO BE DELETED
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -148,6 +148,8 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
+	LCDClear(); // TESTING CODE _ TO BE DELETED
+	LCDWriteString("Bucket"); // TESTING CODE _ TO BE DELETED
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -223,16 +225,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // Small - TEST
+			//PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // Small - TEST
+			//PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // Small - TEST
+			//PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // Small - TEST
+			//PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -243,13 +249,13 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 		
-		if(step == 1){
+		//if(step == 1){
 		mTimer(20); // Step Delay
-		} else if(step == 50){
-			mTimer(fifty[j]);
-		} else if(step == 100){
-			mTimer(onehundred[j]);
-		} // Stepper acceleration and deceleration 
+		//} else if(step == 50){
+		//	mTimer(fifty[j]);
+		//} else if(step == 100){
+		//	mTimer(onehundred[j]);
+		//} // Stepper acceleration and deceleration 
 		CurPosition++;
 	} // for
 } // stepcw
@@ -265,16 +271,20 @@ void stepccw (int step) {
 
 		switch (CurPosition) {
 			case 1:
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // Small - TEST
+			//PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // Small - TEST
+			//PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // Small - TEST
+			//PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // Small - TEST
+			//PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -285,13 +295,13 @@ void stepccw (int step) {
 			PolePosition--;
 		}
 
-		if(step == 1){
+		//if(step == 1){
 		mTimer(20); // Step Delay
-		} else if(step == 50){
-			mTimer(fifty[j]);
-		} else if(step == 100){
-			mTimer(onehundred[j]);
-		} // Stepper acceleration and deceleration 
+		//} else if(step == 50){
+		//	mTimer(fifty[j]);
+		//} else if(step == 100){
+		//	mTimer(onehundred[j]);
+		//} // Stepper acceleration and deceleration 
 		CurPosition--;
 	} // for
 } // stepccw
@@ -432,9 +442,15 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 
 
 ISR(INT2_vect){
-	STATE = 2; // Enter state 2 after finished readings
-	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
-	ADCSRA |= _BV(ADSC); // Take another ADC reading
+	mTimer(20); // TEST CODE - to be deleted
+	if((PIND & 0b00000100) == 0b00000100){
+		STATE = 2; // Enter state 2 after finished readings
+		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
+		LCDClear(); // TESTING CODE _ TO BE DELETED
+		LCDWriteString("READ ADC"); // TESTING CODE _ TO BE DELETED
+		//mTimer(2000); // TESTING CODE _ TO BE DELETED
+		ADCSRA |= _BV(ADSC); // Take another ADC reading
+	}
 } // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
 
 // Optical Sensor for Bucket Stage (EX)
@@ -443,9 +459,16 @@ ISR(INT3_vect){
 	bucket_psn = 0;
 	bucket_val = 0;
 	bucket_move = 0;
+	//bucket_move = size(&bucket_h, &reflect_t);
 
 	// Pull value from linked list head
 	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDWriteIntXY(0,1,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	mTimer(2000); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//mTimer(2000); // TESTING CODE _ TO BE DELETED - writing on the second line
 	// Dequeue link after the reading have been extracted for the sorting algorithm
 	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
@@ -471,7 +494,7 @@ ISR(INT3_vect){
 		LCDClear(); // TESTING CODE _ TO BE DELETED
 		LCDWriteString("BLACK"); // TESTING CODE _ TO BE DELETED
 	}
-
+	mTimer(2000); // TESTING CODE _ TO BE DELETED
 	// For ease of use with potentiometer
 	// LCDWriteIntXY(0, 1, bucket_val, 4);
 
@@ -515,11 +538,15 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
+		mTimer(20); // TEST CODE - to be deleted
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
 		newLink->reflect_val = reflect_val;
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
+		LCDClear(); // TESTING CODE _ TO BE DELETED
+		LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
+		mTimer(2000); // TESTING CODE - to be deleted
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
