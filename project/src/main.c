@@ -506,19 +506,19 @@ ISR(INT3_vect){
 	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
 	// Determine which type of material
-	if(Al_low <= bucket_val && bucket_val <= Al_high) {
+	if(bucket_val==1) {
 		bucket_psn=0;
 		Alum++;
 		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
-	} else if(St_low <= bucket_val && bucket_val <= St_high) {
+	} else if(bucket_val==2) {
 		bucket_psn=50;
 		Steel++;
 		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
-	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
+	} else if(bucket_val==3) {
 		bucket_psn=100;
 		White++;
 		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
-	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
+	} else if(bucket_val==4) {
 		bucket_psn=150;
 		Black++;
 		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
@@ -567,12 +567,34 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
-		//mTimer(20); // TEST CODE - to be deleted
+
+		//mTimer(20); // TEST CODE - to be deleted - for button debouncing
+
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
-		newLink->reflect_val = reflect_val;
+
+		//LCDClear(); // TEST CODE - to be deleted
+		//LCDWriteIntXY(0,0,reflect_val,4); // TEST CODE - to be deleted
+		//mTimer(3000); // TEST CODE - to be deleted
+
+		if(Al_low <= reflect_val && reflect_val <= Al_high) {
+			newLink->reflect_val = 1;
+			//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		} else if(St_low <= reflect_val && reflect_val <= St_high) {
+			newLink->reflect_val = 2;
+			//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+		} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
+			newLink->reflect_val = 3;
+			//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+		} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
+			newLink->reflect_val = 4;
+			//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
+		}
+		
+		//newLink->reflect_val = reflect_val;
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
+		
 		//LCDClear(); // TESTING CODE _ TO BE DELETED
 		//LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
 		//mTimer(2000); // TESTING CODE - to be deleted
