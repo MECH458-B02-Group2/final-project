@@ -83,3 +83,4 @@ void lq_setup(link **bucket_h, link **reflect_t);
 void initLink(link **newLink);
 void enqueueLink(link **bucket_h, link **reflect_t, link **newLink);
 void dequeueLink(link **bucket_h, link **reflect_t);
+int lq_size(link **first, link **last);

@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
 	// External Interrupts
 	cli();		// Disables all interrupts
 
-	// EIMSK |= (_BV(INT0)); // enable INT2
+	// EIMSK |= (_BV(INT0)); // enable INT0
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
@@ -65,7 +65,9 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
-	//step_home(); // Working correctly as per TR3
+	step_home(); // Working correctly as per TR3
+	//PolePosition = 0; // TESTING CODE - to be deleted
+	//CurPosition = 0; // TESTING CODE - to be deleted
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -135,8 +137,8 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	LCDClear(); // TESTING CODE _ TO BE DELETED
-	LCDWriteString("Reflective"); // TESTING CODE _ TO BE DELETED
+	//LCDClear(); // TESTING CODE _ TO BE DELETED
+	//LCDWriteString("Reflective"); // TESTING CODE _ TO BE DELETED
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -148,8 +150,8 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
-	LCDClear(); // TESTING CODE _ TO BE DELETED
-	LCDWriteString("Bucket"); // TESTING CODE _ TO BE DELETED
+	//LCDClear(); // TESTING CODE _ TO BE DELETED
+	//LCDWriteString("Bucket"); // TESTING CODE _ TO BE DELETED
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -225,20 +227,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			PORTA = 0b00001000 ; // Small - TEST
-			//PORTA = 0b00110000;
+			//PORTA = 0b00001000 ; // Small - TEST
+			PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000100; // Small - TEST
-			//PORTA = 0b00000110;
+			//PORTA = 0b00000100; // Small - TEST
+			PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00000010; // Small - TEST
-			//PORTA = 0b00101000;
+			//PORTA = 0b00000010; // Small - TEST
+			PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000001; // Small - TEST
-			//PORTA = 0b00000101;
+			//PORTA = 0b00000001; // Small - TEST
+			PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -271,20 +273,20 @@ void stepccw (int step) {
 
 		switch (CurPosition) {
 			case 1:
-			PORTA = 0b00001000 ; // Small - TEST
-			//PORTA = 0b00110000;
+			//PORTA = 0b00001000 ; // Small - TEST
+			PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000100; // Small - TEST
-			//PORTA = 0b00000110;
+			//PORTA = 0b00000100; // Small - TEST
+			PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00000010; // Small - TEST
-			//PORTA = 0b00101000;
+			//PORTA = 0b00000010; // Small - TEST
+			PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000001; // Small - TEST
-			//PORTA = 0b00000101;
+			//PORTA = 0b00000001; // Small - TEST
+			PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -427,6 +429,27 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 	return;
 }/*dequeue*/
 
+// LINKED QUEUE SIZE
+// Description: This subroutine measures the number of links from one pointer to another. This will 
+//              mostly be used for debugging purposes.
+
+int lq_size(link **first, link **last) {
+
+	link 	*temp;			/* will store the link while traversing the queue */
+	int 	numElements;
+
+	numElements = 0;
+
+	temp = *first;			/* point to the first item in the list */
+
+	while(temp != *last){
+		numElements++;
+		temp = temp->next;
+	}/*while*/
+	
+	return(numElements);
+}/*lq_size*/
+
 // #endregion
 
 /*------------------------------------------------------------------------------------------------------*/
@@ -442,33 +465,29 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 
 
 ISR(INT2_vect){
-	mTimer(20); // TEST CODE - to be deleted
+	//mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
 	if((PIND & 0b00000100) == 0b00000100){
 		STATE = 2; // Enter state 2 after finished readings
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("READ ADC"); // TESTING CODE _ TO BE DELETED
-		//mTimer(2000); // TESTING CODE _ TO BE DELETED
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	}
-} // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
+} // Reflective optical sensor - PD2 = OR Sensor (Active Hi) - verified
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
 	STATE = 3; // will goto BUCKET_STAGE
+	DC_Stop(); // TESTING CODE - to be deleted
 	bucket_psn = 0;
 	bucket_val = 0;
 	bucket_move = 0;
-	//bucket_move = size(&bucket_h, &reflect_t);
+	bucket_move = lq_size(&bucket_h, &reflect_t);
 
 	// Pull value from linked list head
 	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,1,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	mTimer(2000); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//mTimer(2000); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
 	// Dequeue link after the reading have been extracted for the sorting algorithm
 	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
@@ -476,23 +495,19 @@ ISR(INT3_vect){
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
 		bucket_psn=0;
 		Alum++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
 	} else if(St_low <= bucket_val && bucket_val <= St_high) {
 		bucket_psn=50;
 		Steel++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("STEEL"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
 	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
 		bucket_psn=100;
 		White++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("WHITE"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
 	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
 		bucket_psn=150;
 		Black++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("BLACK"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
 	}
 	mTimer(2000); // TESTING CODE _ TO BE DELETED
 	// For ease of use with potentiometer
@@ -538,15 +553,15 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
-		mTimer(20); // TEST CODE - to be deleted
+		//mTimer(20); // TEST CODE - to be deleted
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
 		newLink->reflect_val = reflect_val;
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
-		mTimer(2000); // TESTING CODE - to be deleted
+		//LCDClear(); // TESTING CODE _ TO BE DELETED
+		//LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
+		//mTimer(2000); // TESTING CODE - to be deleted
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
