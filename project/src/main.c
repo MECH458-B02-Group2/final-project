@@ -65,9 +65,9 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
-	step_home(); // Working correctly as per TR3
-	//PolePosition = 0; // TESTING CODE - to be deleted
-	//CurPosition = 0; // TESTING CODE - to be deleted
+	//step_home(); // Working correctly as per TR3
+	PolePosition = 0; // TESTING CODE - to be deleted
+	CurPosition = 0; // TESTING CODE - to be deleted
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -78,7 +78,9 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	
+	stepcw(400); // TESTING CODE - to be deleted
+		LCDClear(); // TESTING CODE - to be deleted
+		LCDWriteString("Stepping"); // TESTING CODE - to be deleted
 // #endregion
 	
 	// Enable all interrupts
@@ -150,8 +152,59 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
-	//LCDClear(); // TESTING CODE _ TO BE DELETED
-	//LCDWriteString("Bucket"); // TESTING CODE _ TO BE DELETED
+	bucket_psn = 0;
+	bucket_val = 0;
+	bucket_move = 0;
+	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
+
+	// Pull value from linked list head
+	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+
+	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
+	// Dequeue link after the reading have been extracted for the sorting algorithm
+	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
+
+	// Determine which type of material
+	if(bucket_val==1) {
+		bucket_psn=150;
+		Alum++;
+		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+	} else if(bucket_val==2) {
+		bucket_psn=50;
+		Steel++;
+		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+	} else if(bucket_val==3) {
+		bucket_psn=100;
+		White++;
+		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+	} else if(bucket_val==4) {
+		bucket_psn=0;
+		Black++;
+		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
+	}
+	// mTimer(2000); // TESTING CODE _ TO BE DELETED
+	// For ease of use with potentiometer
+	// LCDWriteIntXY(0, 1, bucket_val, 4);
+
+	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+		// DC_Stop(); - moved to beginning of ISR3 for now
+		// 200 steps per revolution -> 1.8 degrees per rev
+		bucket_move = bucket_psn - (CurPosition%200);
+		if(bucket_move == -50 || bucket_move == 150) {
+			stepcw(50); // TESTING CODE - swapped directions incase I had them wrong
+		} else if(bucket_move == 50 || bucket_move == -150){
+			stepccw(50);
+		} else if(abs(bucket_move) == 100){
+			stepcw(100);
+		}
+	} // CW/CCW might be backwards
+	// Can add direction later, Nigel had a good idea for it to keep track of directionality
+	// Only really matters when its the same distance either way
+	// Table is stopped either way so does it really matter?
+	DC_Start();
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -240,20 +293,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			//PORTA = 0b00001000 ; // Small - TEST
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // Small - TEST
+			//PORTA = 0b00110000;
 			break;
 			case 2:
-			//PORTA = 0b00000100; // Small - TEST
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // Small - TEST
+			//PORTA = 0b00000110;
 			break;
 			case 3:
-			//PORTA = 0b00000010; // Small - TEST
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // Small - TEST
+			//PORTA = 0b00101000;
 			break;
 			case 4:
-			//PORTA = 0b00000001; // Small - TEST
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // Small - TEST
+			//PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -284,22 +337,22 @@ void stepccw (int step) {
 			PolePosition=4;
 		}
 
-		switch (CurPosition) {
+		switch (PolePosition) {
 			case 1:
-			//PORTA = 0b00001000 ; // Small - TEST
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // Small - TEST
+			//PORTA = 0b00110000;
 			break;
 			case 2:
-			//PORTA = 0b00000100; // Small - TEST
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // Small - TEST
+			//PORTA = 0b00000110;
 			break;
 			case 3:
-			//PORTA = 0b00000010; // Small - TEST
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // Small - TEST
+			//PORTA = 0b00101000;
 			break;
 			case 4:
-			//PORTA = 0b00000001; // Small - TEST
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // Small - TEST
+			//PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -490,59 +543,6 @@ ISR(INT2_vect){
 ISR(INT3_vect){
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
-	bucket_psn = 0;
-	bucket_val = 0;
-	bucket_move = 0;
-	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
-
-	// Pull value from linked list head
-	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
-
-	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
-	// Dequeue link after the reading have been extracted for the sorting algorithm
-	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
-
-	// Determine which type of material
-	if(bucket_val==1) {
-		bucket_psn=0;
-		Alum++;
-		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==2) {
-		bucket_psn=50;
-		Steel++;
-		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==3) {
-		bucket_psn=100;
-		White++;
-		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==4) {
-		bucket_psn=150;
-		Black++;
-		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
-	}
-	// mTimer(2000); // TESTING CODE _ TO BE DELETED
-	// For ease of use with potentiometer
-	// LCDWriteIntXY(0, 1, bucket_val, 4);
-
-	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		// DC_Stop(); - moved to beginning of ISR3 for now
-		// 200 steps per revolution -> 1.8 degrees per rev
-		bucket_move = bucket_psn - (CurPosition%200);
-		if(bucket_move == -50 || bucket_move == 150) {
-			stepcw(50); // TESTING CODE - swapped directions incase I had them wrong
-		} else if(bucket_move == 50 || bucket_move == -150){
-			stepccw(50);
-		} else if(abs(bucket_move) == 100){
-			stepcw(100);
-		}
-	} // CW/CCW might be backwards
-	// Can add direction later, Nigel had a good idea for it to keep track of directionality
-	// Only really matters when its the same distance either way
-	// Table is stopped either way so does it really matter?
-	DC_Start();
 } // PD3 = EX Sensor (Active Lo)
 
 // Pause button
