@@ -221,19 +221,18 @@ int main(int argc, char *argv[]){
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	LCDClear();
+	LCDWriteStringXY(0,0,"Al");
+	LCDWriteIntXY(3,0,Alum,2);
+	LCDWriteStringXY(6,0,"St");
+	LCDWriteIntXY(9,0,Steel,2);
+	LCDWriteStringXY(0,1,"Wh");
+	LCDWriteIntXY(3,1,White,2);
+	LCDWriteStringXY(6,1,"Bl");
+	LCDWriteIntXY(9,1,Black,2);
+	LCDWriteStringXY(12,0,"Belt");
+	LCDWriteIntXY(13,1,bucket_move,2);
 	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
-	while(STATE == 4) {
-		LCDWriteStringXY(0,0,"Al");
-		LCDWriteIntXY(3,0,Alum,2);
-		LCDWriteStringXY(6,0,"St");
-		LCDWriteIntXY(9,0,Steel,2);
-		LCDWriteStringXY(0,1,"Wh");
-		LCDWriteIntXY(3,1,White,2);
-		LCDWriteStringXY(6,1,"Bl");
-		LCDWriteIntXY(9,1,Black,2);
-		LCDWriteStringXY(12,0,"Belt");
-		LCDWriteIntXY(13,1,bucket_move,2);
-	} // Wait until pause button is pressed again
+	while(STATE == 4); // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
 	

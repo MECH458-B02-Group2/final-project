@@ -49,3 +49,40 @@ Notes:
  If only one part is loaded at a time the belt sometimes wouldn't stop at all on Simons board, which is strange, 
  or it stops and starts right away. Before Simon's apparatus we used one with delays on with Kurt's board and it was working somewhat,
  All ADC values were correct, the linked list may have been lagging, but it seemed like it all worked, but then on Simon's that was not the case
+
+5 - Combined Functionality
+Attempt 1
+With Kurt, gave some advice on how to better structure ISRs
+
+Attempt 2
+  Testing with Simon
+  Parts always categorizing correctly
+  Some parts sorting correctly, some not
+  Hypothesis: the ISR is skipping some parts because the stepper has to move while the ISR is not triggered yet
+
+Attempt 3
+  New Testing w/ Patrick :) Much more helpful
+  White and steel are correct
+  Black dumps into steel
+  Retry
+  White works
+  Steel works
+  Black dumps into steel
+  Aluminum dumps into steel
+  
+  With all four samples at once it sorts some but not all
+
+  Attempt 4
+  After homing, four step correct 4 steps counter clockwise
+
+  The stepper is dying
+  The lights are going off when it tries sorting
+
+  Aluminum works after homing
+  Steel from aluminum does not works
+  Black to white, white to black works
+  Black to aluminum works
+  Aluminum to white messes up
+  CCW to steel from black messes up
+
+  
