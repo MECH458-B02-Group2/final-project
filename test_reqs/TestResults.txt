@@ -38,3 +38,14 @@ SUCCESS
 Notes:
  - Asked exactly what we actually need the magnetic stage for if we can sort without it
  ANS: 
+ - don't need it
+
+ Test 5
+ Tried twice on Monday, some good and bad. The ADC is verified again after some back and forth, 
+ with some pause functionality and displaying the number of links left it sort of worked when 4 pieces 
+ were loaded on at a time. The DC motor stop speed was increased so that parts would not fly off and it was
+ advised to stop the motor as soon as the interrupt triggers. 
+
+ If only one part is loaded at a time the belt sometimes wouldn't stop at all on Simons board, which is strange, 
+ or it stops and starts right away. Before Simon's apparatus we used one with delays on with Kurt's board and it was working somewhat,
+ All ADC values were correct, the linked list may have been lagging, but it seemed like it all worked, but then on Simon's that was not the case

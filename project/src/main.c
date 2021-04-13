@@ -167,7 +167,20 @@ int main(int argc, char *argv[]){
  
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
-	while(STATE == 4); // Wait until pause button is pressed again
+	LCDClear();
+	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
+	while(STATE == 4) {
+		LCDWriteStringXY(0,0,"Al");
+		LCDWriteIntXY(3,0,Alum,2);
+		LCDWriteStringXY(6,0,"St");
+		LCDWriteIntXY(9,0,Steel,2);
+		LCDWriteStringXY(0,1,"Wh");
+		LCDWriteIntXY(3,1,White,2);
+		LCDWriteStringXY(6,1,"Bl");
+		LCDWriteIntXY(9,1,Black,2);
+		LCDWriteStringXY(12,0,"Belt");
+		LCDWriteIntXY(13,1,bucket_move,2);
+	} // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
 	
@@ -321,9 +334,9 @@ void DC_Start(void) {
 } // Motor start
 
 void DC_Stop(void) {
-	PORTB = 0x0F; // Brake
-	mTimer(10); // wait 10 ms
-	PORTB = 0x00; // Motor off
+	PORTB = 0x0F; // Brake high - try not braking at all
+	//mTimer(10); // wait 10 ms - was mainly for direction change
+	//PORTB = 0x00; // Motor off
 	return;
 } // Motor stop
 
@@ -475,19 +488,20 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	STATE = 3; // will goto BUCKET_STAGE
 	DC_Stop(); // TESTING CODE - to be deleted
+	STATE = 3; // will goto BUCKET_STAGE
 	bucket_psn = 0;
 	bucket_val = 0;
 	bucket_move = 0;
-	bucket_move = lq_size(&bucket_h, &reflect_t);
+	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
 	// Pull value from linked list head
 	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
-	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
+
+	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
 	// Dequeue link after the reading have been extracted for the sorting algorithm
 	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
@@ -495,26 +509,26 @@ ISR(INT3_vect){
 	if(Al_low <= bucket_val && bucket_val <= Al_high) {
 		bucket_psn=0;
 		Alum++;
-		LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
 	} else if(St_low <= bucket_val && bucket_val <= St_high) {
 		bucket_psn=50;
 		Steel++;
-		LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
 	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
 		bucket_psn=100;
 		White++;
-		LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
 	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
 		bucket_psn=150;
 		Black++;
-		LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
+		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
 	}
-	mTimer(2000); // TESTING CODE _ TO BE DELETED
+	// mTimer(2000); // TESTING CODE _ TO BE DELETED
 	// For ease of use with potentiometer
 	// LCDWriteIntXY(0, 1, bucket_val, 4);
 
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		DC_Stop();
+		// DC_Stop(); - moved to beginning of ISR3 for now
 		// 200 steps per revolution -> 1.8 degrees per rev
 		bucket_move = bucket_psn - (CurPosition%200);
 		if(bucket_move == -50 || bucket_move == 150) {
@@ -562,6 +576,7 @@ ISR(ADC_vect) {
 		//LCDClear(); // TESTING CODE _ TO BE DELETED
 		//LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
 		//mTimer(2000); // TESTING CODE - to be deleted
+
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 
