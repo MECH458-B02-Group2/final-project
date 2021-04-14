@@ -65,9 +65,8 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
-	//step_home(); // Working correctly as per TR3
-	PolePosition = 0; // TESTING CODE - to be deleted
-	CurPosition = 0; // TESTING CODE - to be deleted
+	step_home(); // Working correctly as per TR3
+	
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -78,9 +77,34 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	stepcw(400); // TESTING CODE - to be deleted
-		LCDClear(); // TESTING CODE - to be deleted
-		LCDWriteString("Stepping"); // TESTING CODE - to be deleted
+	
+	// TEST BLOCK TO VALIDATE STEPPER MOTOR - LCD can't display negatives, hence abs(Cur)
+	/*
+	LCDClear();
+	LCDWriteStringXY(0,0,"Pole");
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteStringXY(0,1,"Curr");
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	stepccw(45); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepccw(69); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepcw(34); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepccw(27); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	LCDClear(); // TESTING CODE - to be deleted
+	LCDWriteString("Stepping"); // TESTING CODE - to be deleted
+	*/
+	
 // #endregion
 	
 	// Enable all interrupts
@@ -169,11 +193,11 @@ int main(int argc, char *argv[]){
 
 	// Determine which type of material
 	if(bucket_val==1) {
-		bucket_psn=150;
+		bucket_psn=50;
 		Alum++;
 		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
 	} else if(bucket_val==2) {
-		bucket_psn=50;
+		bucket_psn=150;
 		Steel++;
 		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
 	} else if(bucket_val==3) {
@@ -276,7 +300,6 @@ void step_home(void) {
 		stepcw(1);
 	}
 
-	PolePosition = 0;
 	CurPosition = 0;
 
 } // Homing Function - validated
