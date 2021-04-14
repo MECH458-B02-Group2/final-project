@@ -77,7 +77,7 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	
+
 	// TEST BLOCK TO VALIDATE STEPPER MOTOR - LCD can't display negatives, hence abs(Cur)
 	/*
 	LCDClear();
@@ -218,11 +218,14 @@ int main(int argc, char *argv[]){
 		// 200 steps per revolution -> 1.8 degrees per rev
 		bucket_move = bucket_psn - (CurPosition%200);
 		if(bucket_move == -50 || bucket_move == 150) {
-			stepcw(50); // TESTING CODE - swapped directions incase I had them wrong
+			//stepcw(50); 
+			stepcw(512); // FOR OUR AT HOME SETUP
 		} else if(bucket_move == 50 || bucket_move == -150){
-			stepccw(50);
+			//stepccw(50);
+			stepccw(512); // FOR OUR AT HOME SETUP
 		} else if(abs(bucket_move) == 100){
-			stepcw(100);
+			//stepcw(100);
+			stepcw(1024); // FOR OUR AT HOME SETUP
 		}
 	} // CW/CCW might be backwards
 	// Can add direction later, Nigel had a good idea for it to keep track of directionality
@@ -261,6 +264,7 @@ int main(int argc, char *argv[]){
 	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
+	LCDClear();
 	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
@@ -340,7 +344,8 @@ void stepcw (int step) {
 		}
 		
 		//if(step == 1){
-		mTimer(20); // Step Delay
+		mTimer(10); // FOR OUR APPARATUS
+		//mTimer(20); // Step Delay
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -386,7 +391,8 @@ void stepccw (int step) {
 		}
 
 		//if(step == 1){
-		mTimer(20); // Step Delay
+		mTimer(10); // FOR OUR APPARATUS
+		//mTimer(20); // Step Delay
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -553,7 +559,7 @@ int lq_size(link **first, link **last) {
 
 
 ISR(INT2_vect){
-	//mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
+	mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
 	if((PIND & 0b00000100) == 0b00000100){
 		STATE = 2; // Enter state 2 after finished readings
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
@@ -563,6 +569,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
+	mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
@@ -590,7 +597,7 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		//mTimer(20); // TEST CODE - to be deleted - for button debouncing
+		mTimer(20); // TEST CODE - to be deleted - for button debouncing
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
