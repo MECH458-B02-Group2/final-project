@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
 	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
 	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
-	if (bucket_h) {
+	// if (bucket_h) {
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
@@ -293,7 +293,7 @@ int main(int argc, char *argv[]){
 		// Only really matters when its the same distance either way
 		// Table is stopped either way so does it really matter?
 
-	}
+	// }
 	
 	STATE = 0; //Reset the state variable
 	DC_Start();
