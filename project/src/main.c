@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
 	bucket_move = 0;
 	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
-	if (bucket_h != NULL) {
+	if (bucket_h) {
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
@@ -291,10 +291,10 @@ int main(int argc, char *argv[]){
 		// Can add direction later, Nigel had a good idea for it to keep track of directionality
 		// Only really matters when its the same distance either way
 		// Table is stopped either way so does it really matter?
-		DC_Start();
 	}
 	
 	STATE = 0; //Reset the state variable
+	DC_Start();
 	goto POLLING_STAGE;
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
@@ -632,6 +632,7 @@ ISR(INT2_vect){
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
 	mTimer(100); // TEST CODE - to be deleted
+	// check if bit is lo
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
