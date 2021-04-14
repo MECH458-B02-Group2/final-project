@@ -184,9 +184,11 @@ int main(int argc, char *argv[]){
 	// Pull value from linked list head
 	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
-	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+	LCDWriteStringXY(12,0, "BV:")
+	LCDWriteStringXY(0, 1, "BP:     CP:")
+	LCDWriteIntXY(15,0,bucket_val,1); // TESTING CODE _ TO BE DELETED - writing on the second line
+	// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
 	//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
 	// Dequeue link after the reading have been extracted for the sorting algorithm
 	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
@@ -195,23 +197,23 @@ int main(int argc, char *argv[]){
 	if(bucket_val==1) {
 		bucket_psn=50;
 		Alum++;
-		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
 	} else if(bucket_val==2) {
 		bucket_psn=150;
 		Steel++;
-		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
 	} else if(bucket_val==3) {
 		bucket_psn=100;
 		White++;
-		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
 	} else if(bucket_val==4) {
 		bucket_psn=0;
 		Black++;
-		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
+		LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
 	}
 	// mTimer(2000); // TESTING CODE _ TO BE DELETED
-	// For ease of use with potentiometer
-	// LCDWriteIntXY(0, 1, bucket_val, 4);
+	LCDWriteIntXY(3, 1, bucket_psn, 3);  // TESTING CODE _ stepper-debug
+	LCDWriteIntXY(11, 1, CurPosition, 4); // TESTING CODE _ stepper-debug
 
 	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
 		// DC_Stop(); - moved to beginning of ISR3 for now
@@ -228,6 +230,9 @@ int main(int argc, char *argv[]){
 			stepcw(1024); // FOR OUR AT HOME SETUP
 		}
 	} // CW/CCW might be backwards
+
+	LCDWriteIntXY(11, 1, CurPosition, 4); // TESTING CODE _ stepper-debug
+
 	// Can add direction later, Nigel had a good idea for it to keep track of directionality
 	// Only really matters when its the same distance either way
 	// Table is stopped either way so does it really matter?
@@ -257,7 +262,7 @@ int main(int argc, char *argv[]){
 	LCDWriteStringXY(6,1,"Bl");
 	LCDWriteIntXY(9,1,Black,2);
 	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(13,1,bucket_move,2);
+	LCDWriteIntXY(12,1,bucket_move,4);
 	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 	while(STATE == 4); // Wait until pause button is pressed again
 	
@@ -344,7 +349,7 @@ void stepcw (int step) {
 		}
 		
 		//if(step == 1){
-		mTimer(10); // FOR OUR APPARATUS
+		mTimer(5); // FOR OUR APPARATUS
 		//mTimer(20); // Step Delay
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
@@ -527,16 +532,16 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 // Description: This subroutine measures the number of links from one pointer to another. This will 
 //              mostly be used for debugging purposes.
 
-int lq_size(link **first, link **last) {
+int lq_size(link **head, link **tail) {
 
 	link 	*temp;			/* will store the link while traversing the queue */
 	int 	numElements;
 
 	numElements = 0;
 
-	temp = *first;			/* point to the first item in the list */
+	temp = *head;			/* point to the first item in the list */
 
-	while(temp != *last){
+	while(temp != NULL){
 		numElements++;
 		temp = temp->next;
 	}/*while*/
@@ -569,7 +574,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
+	mTimer(20); // TEST CODE - to be deleted
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
@@ -602,9 +607,13 @@ ISR(ADC_vect) {
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
+		newLink->reflect_val = 9; // so we know if reflect_val is not set in the following if/else
+		LCDClear();
+		LCDWriteIntXY(0, 0, newLink->reflect_val, 4); // TEST CODE - to be deleted
+		mTimer(1000); // TEST CODE - to be deleted - for button debouncing
 
-		//LCDClear(); // TEST CODE - to be deleted
-		//LCDWriteIntXY(0,0,reflect_val,4); // TEST CODE - to be deleted
+		LCDClear(); // TEST CODE - to be deleted
+		LCDWriteIntXY(0,0,reflect_val,4); // TEST CODE - to be deleted
 		//mTimer(3000); // TEST CODE - to be deleted
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
