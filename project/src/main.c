@@ -198,11 +198,11 @@ int main(int argc, char *argv[]){
 
 		// Determine which type of material
 		if(bucket_val==1) {
-			bucket_psn=150;
+			bucket_psn=50;
 			Alum++;
 			// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
 		} else if(bucket_val==2) {
-			bucket_psn=50;
+			bucket_psn=150;
 			Steel++;
 			// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
 		} else if(bucket_val==3) {
@@ -623,7 +623,7 @@ int lq_size(link **head, link **tail) {
 
 
 ISR(INT2_vect){
-	mTimer(100); // TEST CODE - to be deleted - ruins ADC readings on apparatus
+	// mTimer(100); // TEST CODE - to be deleted - ruins ADC readings on apparatus
 	if((PIND & 0b00000100) == 0b00000100){
 		STATE = 2; // Enter state 2 after finished readings
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
