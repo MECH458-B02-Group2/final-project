@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
 	bucket_move = 0;
 	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
-	// use SIZE instead
+	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
 	if (bucket_h) {
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
