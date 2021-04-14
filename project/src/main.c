@@ -39,12 +39,13 @@ int main(int argc, char *argv[]){
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
-	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
+	EICRB |= _BV(ISC41); // INT4 Rising edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
+	ADCSRA |= _BV(ADPS0) | _BV(ADPS2); // 
 	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
 	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
 
