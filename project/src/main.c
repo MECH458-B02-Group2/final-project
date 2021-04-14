@@ -181,7 +181,8 @@ int main(int argc, char *argv[]){
 	bucket_move = 0;
 	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
-	if (bucket_h != NULL) {
+	// use SIZE instead
+	// if (bucket_h != NULL) {
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]){
 			} else if(abs(bucket_move) == 100){
 				stepcw(100);
 			}
-		} // CW/CCW might be backwards
+		// } // CW/CCW might be backwards
 
 		// AT HOME SETUP - (bucket stage)
 		// #region
@@ -291,10 +292,11 @@ int main(int argc, char *argv[]){
 		// Can add direction later, Nigel had a good idea for it to keep track of directionality
 		// Only really matters when its the same distance either way
 		// Table is stopped either way so does it really matter?
-		DC_Start();
-	}
+
+	// }
 	
 	STATE = 0; //Reset the state variable
+	DC_Start();
 	goto POLLING_STAGE;
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
@@ -357,7 +359,7 @@ int main(int argc, char *argv[]){
 //Homing function
 void step_home(void) {
 
-	PolePosition = 0; // set the zero
+	PolePosition = 1; // set to 1 for either cw or ccw home
 	
 	LCDClear();
 	LCDWriteString("HOMING..");
@@ -632,6 +634,7 @@ ISR(INT2_vect){
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
 	// mTimer(100); // TEST CODE - to be deleted
+	// MASK the bit to see if it's lo
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
