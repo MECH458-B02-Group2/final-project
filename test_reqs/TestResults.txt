@@ -85,4 +85,9 @@ Attempt 3
   Aluminum to white messes up
   CCW to steel from black messes up
 
+
+6 - Sorting Finalization
+
+Attempt 1
+
   
