@@ -89,5 +89,10 @@ Attempt 3
 6 - Sorting Finalization
 
 Attempt 1
+  Pieces stop at bucket stage
+
+Attempt 2
+  Pieces stop at bucket stage still
+
 
   
