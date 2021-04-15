@@ -108,6 +108,7 @@ int main(int argc, char *argv[]){
 			// Dequeue link after the reading have been extracted for the sorting algorithm
 			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
+			/*
 			// Determine which type of material
 			if(bucket_val==1) {
 				bucket_psn=50;
@@ -139,10 +140,12 @@ int main(int argc, char *argv[]){
 				}
 			}
 
+			*/
+
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
 			
-			/*
+			
 			LCDClear(); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
 			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
@@ -183,7 +186,6 @@ int main(int argc, char *argv[]){
 
 			// TESTING CODE _ ATHOME
 			if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
-				// DC_Stop(); - moved to beginning of ISR3 for now
 				// 200 steps per revolution -> 1.8 degrees per rev
 				bucket_move = bucket_psn - (CurPosition%2048);
 				if(bucket_move == -512 || bucket_move == 1536) {
@@ -193,7 +195,7 @@ int main(int argc, char *argv[]){
 				} else if(abs(bucket_move) == 1024){
 					stepcw(1024);
 				}
-			} // CW/CCW might be backwards
+			} // end TESTING CODE _ ATHOME
 
 			// TESTING CODE _ ATHOME
 			if (CurPosition < 0) {
@@ -203,7 +205,7 @@ int main(int argc, char *argv[]){
 			}
 			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
 			// end TESTING CODE _ ATHOME
-			*/
+			
 
 			// end Bucket Stage - TESTING CODE _ ATHOME
 			// #endregion
@@ -261,20 +263,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110000;
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00000110;
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101000;
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -286,8 +288,8 @@ void stepcw (int step) {
 		}
 		
 		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
+		mTimer(5); // TESTING CODE _ ATHOME
+		// mTimer(20); // TESTING CODE _ ATLAB
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -308,20 +310,20 @@ void stepccw (int step) {
 
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110000;
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00000110;
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101000;
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -333,8 +335,8 @@ void stepccw (int step) {
 		}
 
 		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
+		mTimer(5); // TESTING CODE _ ATHOME
+		// mTimer(20); // TESTING CODE _ ATLAB
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -495,7 +497,7 @@ int lq_size(link **head, link **tail) {
 
 // Optical Sensor for Reflective Stage (OR)
 ISR(INT2_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
@@ -504,7 +506,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	// MASK the bit to see if it's lo
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	SORT = 1; // will goto BUCKET_STAGE
@@ -513,7 +515,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
@@ -531,13 +533,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(12,1,bucket_move,4);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
@@ -549,6 +551,7 @@ ISR(INT4_vect) {
 
 /* PE5 = RampDown (Active Lo) */
 ISR(INT5_vect){
+	mTimer(100); // TESTING CODE _ ATHOME
 	RAMPDOWN_FLAG = 1;
 } 
 
@@ -562,7 +565,7 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		// mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
+		mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
