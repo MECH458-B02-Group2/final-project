@@ -189,53 +189,54 @@ int main(int argc, char *argv[]){
 	// if (bucket_h) {
 
 		// START OF AT LAB
+	/*
+		// Pull value from linked list head
+		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
-		// // Pull value from linked list head
-		// bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+		// LCDClear(); // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
+		// mTimer(1000); // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
+		//mTimer(4000); // TESTING CODE _ ATHOME
 
-		// // LCDClear(); // TESTING CODE _ ATHOME
-		// // LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
-		// // LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
-		// // LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
-		// // mTimer(1000); // TESTING CODE _ ATHOME
-		// // LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
-		// //mTimer(4000); // TESTING CODE _ ATHOME
+		// Dequeue link after the reading have been extracted for the sorting algorithm
+		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
-		// // Dequeue link after the reading have been extracted for the sorting algorithm
-		// dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
+		// Determine which type of material
+		if(bucket_val==1) {
+			bucket_psn=50;
+			Alum++;
+			// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==2) {
+			bucket_psn=150;
+			Steel++;
+			// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==3) {
+			bucket_psn=100;
+			White++;
+			// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==4) {
+			bucket_psn=0;
+			Black++;
+			// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+		}
+		// mTimer(2000); // TESTING CODE _ ATHOME
 
-		// // Determine which type of material
-		// if(bucket_val==1) {
-		// 	bucket_psn=50;
-		// 	Alum++;
-		// 	// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
-		// } else if(bucket_val==2) {
-		// 	bucket_psn=150;
-		// 	Steel++;
-		// 	// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
-		// } else if(bucket_val==3) {
-		// 	bucket_psn=100;
-		// 	White++;
-		// 	// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
-		// } else if(bucket_val==4) {
-		// 	bucket_psn=0;
-		// 	Black++;
-		// 	// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
-		// }
-		// // mTimer(2000); // TESTING CODE _ ATHOME
-
-		// if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		// 	// DC_Stop(); - moved to beginning of ISR3 for now
-		// 	// 200 steps per revolution -> 1.8 degrees per rev
-		// 	bucket_move = bucket_psn - (CurPosition%200);
-		// 	if(bucket_move == -50 || bucket_move == 150) {
-		// 		stepccw(50);
-		// 	} else if(bucket_move == 50 || bucket_move == -150){
-		// 		stepcw(50);
-		// 	} else if(abs(bucket_move) == 100){
-		// 		stepcw(100);
-		// 	}
-		// }
+		if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+			// DC_Stop(); - moved to beginning of ISR3 for now
+			// 200 steps per revolution -> 1.8 degrees per rev
+			bucket_move = bucket_psn - (CurPosition%200);
+			if(bucket_move == -50 || bucket_move == 150) {
+				stepccw(50);
+			} else if(bucket_move == 50 || bucket_move == -150){
+				stepcw(50);
+			} else if(abs(bucket_move) == 100){
+				stepcw(100);
+			}
+		}
+	*/
 
 		// Bucket Stage - TESTING CODE _ ATHOME
 		// #region
@@ -329,8 +330,8 @@ int main(int argc, char *argv[]){
 	LCDWriteStringXY(6,1,"Bl");
 	LCDWriteIntXY(9,1,Black,2);
 	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(12,1,bucket_move,4);
 	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteIntXY(12,1,bucket_move,4);
 	while(STATE == 4); // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
@@ -495,7 +496,7 @@ void stepccw (int step) {
 
 		if(step == 1){
 		mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
+		// mTimer(20); // TESTING CODE _ ATLAB
 		} else if(step == 50){
 			mTimer(quarter[j]);
 		} else if(step == 100){
@@ -708,7 +709,7 @@ ISR(ADC_vect) {
 
 		LCDClear(); // TESTING CODE - ATHOME & ATLAB
 		LCDWriteIntXY(0,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
-		mTimer(3000); // TESTING CODE - ATHOME
+		// mTimer(3000); // TESTING CODE - ATHOME
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
 			newLink->reflect_val = 1;
