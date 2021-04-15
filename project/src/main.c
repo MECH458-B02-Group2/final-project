@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 	sei();	// Note this sets the Global Enable for all interrupts
 
 	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
-	LCDWriLteStringXY(0,0,"RD FLAG"); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteStringXY(0,0,"R FLAG"); // TESTING CODE _ ATHOME & ATLAB
 	LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME & ATLAB
 	mTimer(5000);
 
@@ -253,6 +253,7 @@ int main(int argc, char *argv[]){
 
 // Acceleration Curve Generator
 
+/*
 void accel_curve(void) {
 	int sq = sizeof(quarter);
 	int sh = sizeof(half);
@@ -280,6 +281,7 @@ void accel_curve(void) {
 	} // for half
 	
 } // Acceleration Curve
+*/
 
 //Homing function
 
@@ -333,6 +335,8 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 		
+		mTimer(5); // TESTING CODE _ ATHOME
+	/*
 		if(step == 1){
 		mTimer(5); // TESTING CODE _ ATHOME
 		// mTimer(20); // TESTING CODE _ ATLAB
@@ -341,6 +345,7 @@ void stepcw (int step) {
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
+	*/
 		CurPosition++;
 	} // for
 } // stepcw
@@ -380,6 +385,8 @@ void stepccw (int step) {
 			PolePosition--;
 		}
 
+		mTimer(5); // TESTING CODE _ ATHOME
+/*
 		if(step == 1){
 		mTimer(5); // TESTING CODE _ ATHOME
 		// mTimer(20); // TESTING CODE _ ATLAB
@@ -388,8 +395,10 @@ void stepccw (int step) {
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
+		*/
 		CurPosition--;
 	} // for
+
 } // stepccw
 
 // #endregion

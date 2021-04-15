@@ -12,16 +12,16 @@ volatile int CurPosition;
 //acceleration curves for stepper
 // Simon: Accel over 15 steps, decel over 5, from around 20ms to 6ms 
 
-int accel[15] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7};
-int decel[5]  = {8,10,13,17,20}; 
-int const min_accel = 6; // smallest mTimer value for stepper
+//int accel[15] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7};
+//int decel[5]  = {8,10,13,17,20}; 
+//int const min_accel = 6; // smallest mTimer value for stepper
 
-int half[100]; // = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,
+//int half[100]; // = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,
 // 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 // 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 // 6,6,6,6,6,6,6,6,8,10,13,17,20};
 
-int quarter [50]; // = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,
+//int quarter [50]; // = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,
 // 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,8,10,13,17,20};
 
 // DC Motor
@@ -51,7 +51,7 @@ volatile unsigned int bucket_move;
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
-void accel_curve(void);
+// void accel_curve(void);
 void step_home(void);
 void stepcw(int step);
 void stepccw(int step);
