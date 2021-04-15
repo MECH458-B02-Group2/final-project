@@ -333,7 +333,7 @@ int main(int argc, char *argv[]){
 	
 	// DC_Start(); // Start the DC Motor
 	
-	// STATE = 0;
+	STATE = 0;
 	// LCDClear();
 	// LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
