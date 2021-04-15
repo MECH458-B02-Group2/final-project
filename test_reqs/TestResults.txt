@@ -94,5 +94,17 @@ Attempt 1
 Attempt 2
   Pieces stop at bucket stage still
 
+Attempt 3
+  Changed if statement in bucket stage
+  Moved DC_Start() outside if statement 
+  Pieces kinda sorted but at some point they all got dumped without any sorting
+
+Attempt 4
+  Changed INT4 (pause button) to rising edge (unrelated, just good to note)
+  Added ADC prescaler
+  Pieces almost sorted
+  Swapped bucket_psn for aluminum and steel
+  Pieces sort perfectly
+
 
   
