@@ -86,15 +86,21 @@ int main(int argc, char *argv[]){
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
 	
+		LCDClear(); // TESTING CODE _ ATHOME
+		LCDWriteStringXY(0,0,"R FLAG"); // TESTING CODE _ ATHOME
+		LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME
+		mTimer(2000);
+	
+		stepccw(50); // TESTING CODE _ ATHOME
+		stepccw(100); // TESTING CODE _ ATHOME
+		stepcw(50); // TESTING CODE _ ATHOME
+		stepcw(50); // TESTING CODE _ ATHOME
 // #endregion
 	
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 
-	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
-	LCDWriteStringXY(0,0,"R FLAG"); // TESTING CODE _ ATHOME & ATLAB
-	LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME & ATLAB
-	mTimer(5000);
+
 
 	while(1) {
 
