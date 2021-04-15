@@ -91,6 +91,11 @@ int main(int argc, char *argv[]){
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 
+	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriLteStringXY(0,0,"RD FLAG"); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME & ATLAB
+	mTimer(5000);
+
 	while(1) {
 
 		// SORTING (INT3 Active Lo)
