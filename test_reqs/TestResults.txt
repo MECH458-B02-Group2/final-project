@@ -38,3 +38,74 @@ SUCCESS
 Notes:
  - Asked exactly what we actually need the magnetic stage for if we can sort without it
  ANS: 
+ - don't need it
+
+ Test 5
+ Tried twice on Monday, some good and bad. The ADC is verified again after some back and forth, 
+ with some pause functionality and displaying the number of links left it sort of worked when 4 pieces 
+ were loaded on at a time. The DC motor stop speed was increased so that parts would not fly off and it was
+ advised to stop the motor as soon as the interrupt triggers. 
+
+ If only one part is loaded at a time the belt sometimes wouldn't stop at all on Simons board, which is strange, 
+ or it stops and starts right away. Before Simon's apparatus we used one with delays on with Kurt's board and it was working somewhat,
+ All ADC values were correct, the linked list may have been lagging, but it seemed like it all worked, but then on Simon's that was not the case
+
+5 - Combined Functionality
+Attempt 1
+With Kurt, gave some advice on how to better structure ISRs
+
+Attempt 2
+  Testing with Simon
+  Parts always categorizing correctly
+  Some parts sorting correctly, some not
+  Hypothesis: the ISR is skipping some parts because the stepper has to move while the ISR is not triggered yet
+
+Attempt 3
+  New Testing w/ Patrick :) Much more helpful
+  White and steel are correct
+  Black dumps into steel
+  Retry
+  White works
+  Steel works
+  Black dumps into steel
+  Aluminum dumps into steel
+  
+  With all four samples at once it sorts some but not all
+
+  Attempt 4
+  After homing, four step correct 4 steps counter clockwise
+
+  The stepper is dying
+  The lights are going off when it tries sorting
+
+  Aluminum works after homing
+  Steel from aluminum does not works
+  Black to white, white to black works
+  Black to aluminum works
+  Aluminum to white messes up
+  CCW to steel from black messes up
+
+
+6 - Sorting Finalization
+
+Attempt 1
+  Pieces stop at bucket stage
+
+Attempt 2
+  Pieces stop at bucket stage still
+
+Attempt 3
+  Changed if statement in bucket stage
+  Moved DC_Start() outside if statement 
+  Pieces kinda sorted but at some point they all got dumped without any sorting
+
+Attempt 4
+  Changed INT4 (pause button) to falling edge (unrelated, just good to note)
+  Added ADC prescaler
+  Removed mTimer in ADC ISR
+  Pieces almost sorted
+  Swapped bucket_psn for aluminum and steel
+  Pieces sort perfectly
+
+
+  

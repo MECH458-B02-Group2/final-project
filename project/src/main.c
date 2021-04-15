@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
 	// External Interrupts
 	cli();		// Disables all interrupts
 
-	// EIMSK |= (_BV(INT0)); // enable INT2
+	// EIMSK |= (_BV(INT0)); // enable INT0
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
@@ -39,12 +39,13 @@ int main(int argc, char *argv[]){
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
-	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
+	EICRB |= _BV(ISC41); // INT4 Falling edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
+	ADCSRA |= _BV(ADPS0) | _BV(ADPS2); // ADC Prescaler
 	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
 	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
 
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]){
 	
 	// Stepper Motor
 	step_home(); // Working correctly as per TR3
+	
 	LCDClear(); // TESTING CODE - to be deleted
 	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
 	
@@ -76,6 +78,34 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
+
+	// TEST BLOCK TO VALIDATE STEPPER MOTOR - LCD can't display negatives, hence abs(Cur)
+	// ATHOME & ATLAB
+	/*
+	LCDClear();
+	LCDWriteStringXY(0,0,"Pole");
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteStringXY(0,1,"Curr");
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	stepccw(45); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepccw(69); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepcw(34); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	stepccw(27); // TESTING CODE - to be deleted
+	LCDWriteIntXY(5,0,PolePosition,4);
+	LCDWriteIntXY(5,1,abs(CurPosition),4);
+	mTimer(2000);
+	LCDClear(); // TESTING CODE - to be deleted
+	LCDWriteString("Stepping"); // TESTING CODE - to be deleted
+	*/
 	
 // #endregion
 	
@@ -92,7 +122,7 @@ int main(int argc, char *argv[]){
 	// Description:
             
 	POLLING_STAGE:
-	
+
 	switch(STATE){
 		case (0) :
 		goto POLLING_STAGE;
@@ -135,8 +165,8 @@ int main(int argc, char *argv[]){
 	// Description: 
 
 	REFLECTIVE_STAGE:
-	LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	LCDWriteIntXY(0,1,reflect_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+	//LCDClear(); // TESTING CODE _ ATHOME & ATLAB
+	//LCDWriteString("Reflective"); // TESTING CODE _ ATHOME & ATLAB
 	STATE = 0; //Reset the state variable
 	goto POLLING_STAGE;
 
@@ -148,7 +178,130 @@ int main(int argc, char *argv[]){
 	// Description: 
   
 	BUCKET_STAGE:
+	bucket_psn = 0;
+	bucket_val = 0;
+	bucket_move = 0;
+	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
+
+	// if statements trying to handle int3 triggering with no link in queue
+	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
+	// if (bucket_h) {
+
+		// Pull value from linked list head
+		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+
+		// LCDClear(); // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
+		// mTimer(1000); // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
+		//mTimer(4000); // TESTING CODE _ ATHOME
+
+		// Dequeue link after the reading have been extracted for the sorting algorithm
+		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
+
+		// Determine which type of material
+		if(bucket_val==1) {
+			bucket_psn=50;
+			Alum++;
+			// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==2) {
+			bucket_psn=150;
+			Steel++;
+			// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==3) {
+			bucket_psn=100;
+			White++;
+			// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+		} else if(bucket_val==4) {
+			bucket_psn=0;
+			Black++;
+			// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+		}
+		// mTimer(2000); // TESTING CODE _ ATHOME
+
+		if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+			// DC_Stop(); - moved to beginning of ISR3 for now
+			// 200 steps per revolution -> 1.8 degrees per rev
+			bucket_move = bucket_psn - (CurPosition%200);
+			if(bucket_move == -50 || bucket_move == 150) {
+				stepccw(50);
+			} else if(bucket_move == 50 || bucket_move == -150){
+				stepcw(50);
+			} else if(abs(bucket_move) == 100){
+				stepcw(100);
+			}
+		}
+
+		// Bucket Stage - TESTING CODE _ ATHOME
+		// #region
+
+		// // Determine which type of material
+		// if(bucket_val==1) {
+		// 	LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+		// 	bucket_psn=1536;
+		// 	Alum++;
+		// } else if(bucket_val==2) {
+		// 	LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+		// 	bucket_psn=512;
+		// 	Steel++;
+		// } else if(bucket_val==3) {
+		// 	LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+		// 	bucket_psn=1024;
+		// 	White++;
+		// } else if(bucket_val==4) {
+		// 	LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+		// 	bucket_psn=0;
+		// 	Black++;
+		// }
+		// // mTimer(2000); // TESTING CODE _ ATHOME
+
+		// LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ ATHOME
+		
+		// // TESTING CODE _ ATHOME
+		// if (CurPosition < 0) {
+		// 	LCDWriteStringXY(11, 1, "-");
+		// } else {
+		// 	LCDWriteStringXY(11, 1, "+");
+		// }
+		// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+		// // end TESTING CODE _ ATHOME
+
+		// // TESTING CODE _ ATHOME
+		// if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
+		// 	// DC_Stop(); - moved to beginning of ISR3 for now
+		// 	// 200 steps per revolution -> 1.8 degrees per rev
+		// 	bucket_move = bucket_psn - (CurPosition%2048);
+		// 	if(bucket_move == -512 || bucket_move == 1536) {
+		// 		stepccw(512);
+		// 	} else if(bucket_move == 512 || bucket_move == -1536){
+		// 		stepcw(512);
+		// 	} else if(abs(bucket_move) == 1024){
+		// 		stepcw(1024);
+		// 	}
+		// } // CW/CCW might be backwards
+
+		// // TESTING CODE _ ATHOME
+		// if (CurPosition < 0) {
+		// 	LCDWriteStringXY(11, 1, "-");
+		// } else {
+		// 	LCDWriteStringXY(11, 1, "+");
+		// }
+		// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+		// // end TESTING CODE _ ATHOME
+
+		// end Bucket Stage - TESTING CODE _ ATHOME
+		// #endregion
+
+		// Can add direction later, Nigel had a good idea for it to keep track of directionality
+		// Only really matters when its the same distance either way
+		// Table is stopped either way so does it really matter?
+
+	// }
+	
 	STATE = 0; //Reset the state variable
+	DC_Start(); // Start the DC motor
 	goto POLLING_STAGE;
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
@@ -160,14 +313,27 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
-
+ 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
+	LCDClear();
+	LCDWriteStringXY(0,0,"Al");
+	LCDWriteIntXY(3,0,Alum,2);
+	LCDWriteStringXY(6,0,"St");
+	LCDWriteIntXY(9,0,Steel,2);
+	LCDWriteStringXY(0,1,"Wh");
+	LCDWriteIntXY(3,1,White,2);
+	LCDWriteStringXY(6,1,"Bl");
+	LCDWriteIntXY(9,1,Black,2);
+	LCDWriteStringXY(12,0,"Belt");
+	LCDWriteIntXY(12,1,bucket_move,4);
+	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
 	while(STATE == 4); // Wait until pause button is pressed again
 	
 	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
+	LCDClear();
 	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
@@ -198,7 +364,7 @@ int main(int argc, char *argv[]){
 //Homing function
 void step_home(void) {
 
-	PolePosition = 0; // set the zero
+	PolePosition = 1; // set to 1 for either cw or ccw home
 	
 	LCDClear();
 	LCDWriteString("HOMING..");
@@ -207,7 +373,6 @@ void step_home(void) {
 		stepcw(1);
 	}
 
-	PolePosition = 0;
 	CurPosition = 0;
 
 } // Homing Function - validated
@@ -223,15 +388,19 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
+			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
 			PORTA = 0b00110000;
 			break;
 			case 2:
+			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
 			PORTA = 0b00000110;
 			break;
 			case 3:
+			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
 			PORTA = 0b00101000;
 			break;
 			case 4:
+			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
 			PORTA = 0b00000101;
 			break;
 			default:
@@ -243,10 +412,15 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 		
+		//if(step == 1){
+		// mTimer(5); // TESTING CODE _ ATHOME
+		mTimer(20); // TESTING CODE _ ATLAB
+		//} else if(step == 50){
+		//	mTimer(fifty[j]);
+		//} else if(step == 100){
+		//	mTimer(onehundred[j]);
+		//} // Stepper acceleration and deceleration 
 		CurPosition++;
-		
-		mTimer(delay); // Step Delay
-		
 	} // for
 } // stepcw
 
@@ -259,17 +433,21 @@ void stepccw (int step) {
 			PolePosition=4;
 		}
 
-		switch (CurPosition) {
+		switch (PolePosition) {
 			case 1:
+			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
 			PORTA = 0b00110000;
 			break;
 			case 2:
+			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
 			PORTA = 0b00000110;
 			break;
 			case 3:
+			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
 			PORTA = 0b00101000;
 			break;
 			case 4:
+			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
 			PORTA = 0b00000101;
 			break;
 			default:
@@ -280,11 +458,16 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
-		
+
+		//if(step == 1){
+		// mTimer(5); // TESTING CODE _ ATHOME
+		mTimer(20); // TESTING CODE _ ATLAB
+		//} else if(step == 50){
+		//	mTimer(fifty[j]);
+		//} else if(step == 100){
+		//	mTimer(onehundred[j]);
+		//} // Stepper acceleration and deceleration 
 		CurPosition--;
-		
-		mTimer(delay); // StepDelay
-		
 	} // for
 } // stepccw
 
@@ -301,9 +484,9 @@ void DC_Start(void) {
 } // Motor start
 
 void DC_Stop(void) {
-	PORTB = 0x0F; // Brake
-	mTimer(10); // wait 10 ms
-	PORTB = 0x00; // Motor off
+	PORTB = 0x0F; // Brake high - try not braking at all
+	//mTimer(10); // wait 10 ms - was mainly for direction change
+	//PORTB = 0x00; // Motor off
 	return;
 } // Motor stop
 
@@ -409,6 +592,27 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 	return;
 }/*dequeue*/
 
+// LINKED QUEUE SIZE
+// Description: This subroutine measures the number of links from one pointer to another. This will 
+//              mostly be used for debugging purposes.
+
+int lq_size(link **head, link **tail) {
+
+	link 	*temp;			/* will store the link while traversing the queue */
+	int 	numElements;
+
+	numElements = 0;
+
+	temp = *head;			/* point to the first item in the list */
+
+	while(temp != NULL){
+		numElements++;
+		temp = temp->next;
+	}/*while*/
+	
+	return(numElements);
+}/*lq_size*/
+
 // #endregion
 
 /*------------------------------------------------------------------------------------------------------*/
@@ -424,68 +628,25 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 
 
 ISR(INT2_vect){
-	STATE = 2; // Enter state 2 after finished readings
-	reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
-	ADCSRA |= _BV(ADSC); // Take another ADC reading
-} // Reflective optical sensor - PD2 = OR Sensor (Active Hi)
+	// mTimer(100); // TESTING CODE - ATHOME
+	if((PIND & 0b00000100) == 0b00000100){
+		STATE = 2; // Enter state 2 after finished readings
+		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
+		ADCSRA |= _BV(ADSC); // Take another ADC reading
+	}
+} // Reflective optical sensor - PD2 = OR Sensor (Active Hi) - verified
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
+	// mTimer(100); // TESTING CODE - ATHOME
+	// MASK the bit to see if it's lo
+	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	STATE = 3; // will goto BUCKET_STAGE
-	bucket_psn = 0;
-	bucket_val = 0;
-	bucket_move = 0;
-
-	// Pull value from linked list head
-	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
-	// Dequeue link after the reading have been extracted for the sorting algorithm
-	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
-
-	// Determine which type of material
-	if(Al_low <= bucket_val && bucket_val <= Al_high) {
-		bucket_psn=0;
-		Alum++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("ALUMINUM"); // TESTING CODE _ TO BE DELETED
-	} else if(St_low <= bucket_val && bucket_val <= St_high) {
-		bucket_psn=50;
-		Steel++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("STEEL"); // TESTING CODE _ TO BE DELETED
-	} else if(Wh_low <= bucket_val && bucket_val <= Wh_high) {
-		bucket_psn=100;
-		White++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("WHITE"); // TESTING CODE _ TO BE DELETED
-	} else if(Bl_low <= bucket_val && bucket_val <= Bl_high) {
-		bucket_psn=150;
-		Black++;
-		LCDClear(); // TESTING CODE _ TO BE DELETED
-		LCDWriteString("BLACK"); // TESTING CODE _ TO BE DELETED
-	}
-
-	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		DC_Stop();
-		// 200 steps per revolution -> 1.8 degrees per rev
-		bucket_move = bucket_psn - (CurPosition%200);
-		if(bucket_move == -50 || bucket_move == 150) {
-			stepcw(50); // TESTING CODE - swapped directions incase I had them wrong
-		} else if(bucket_move == 50 || bucket_move == -150){
-			stepccw(50);
-		} else if(abs(bucket_move) == 100){
-			stepcw(100);
-		}
-	} // CW/CCW might be backwards
-	// Can add direction later, Nigel had a good idea for it to keep track of directionality
-	// Only really matters when its the same distance either way
-	// Table is stopped either way so does it really matter?
-	DC_Start();
 } // PD3 = EX Sensor (Active Lo)
 
 // Pause button
 ISR(INT4_vect) {
-	//Home board debugging purposes
-	mTimer(20); // debounce
+	// mTimer(20); // TESTING CODE _ ATHOME
 	
 	if(STATE == 4) {
 		STATE = 0; // will goto POLLING_STAGE
@@ -504,11 +665,33 @@ ISR(ADC_vect) {
 	if((PIND & 0b00000100) == 0b00000100) { 
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
+
+		// mTimer(100); // TESTING CODE - ATHOME
+
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
-		newLink->reflect_val = reflect_val;
+
+		LCDClear(); // TESTING CODE - ATHOME & ATLAB
+		LCDWriteIntXY(0,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
+		//mTimer(3000); // TESTING CODE - ATHOME
+
+		if(Al_low <= reflect_val && reflect_val <= Al_high) {
+			newLink->reflect_val = 1;
+			//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME & ATLAB
+		} else if(St_low <= reflect_val && reflect_val <= St_high) {
+			newLink->reflect_val = 2;
+			//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME & ATLAB
+		} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
+			newLink->reflect_val = 3;
+			//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME & ATLAB
+		} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
+			newLink->reflect_val = 4;
+			//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME & ATLAB
+		}
+
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
+
 	} // Continue taking readings and then add to the linked list
 } // ADC end
 

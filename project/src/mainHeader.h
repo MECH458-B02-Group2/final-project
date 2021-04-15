@@ -8,7 +8,15 @@ volatile int STATE;
 // Stepper Motor
 volatile int PolePosition;
 volatile int CurPosition;
-int const delay = 20;
+//acceleration curves for stepper
+// Simon: Accel over 15 steps, decel over 5, from around 20ms to 6ms 
+int onehundred [99] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,
+6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+6,6,6,6,6,6,6,6,8,10,13,17,20};
+
+int fifty [49] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,
+6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,8,10,13,17,20};
 
 // DC Motor
 int const Speed = 0x60;
@@ -75,3 +83,4 @@ void lq_setup(link **bucket_h, link **reflect_t);
 void initLink(link **newLink);
 void enqueueLink(link **bucket_h, link **reflect_t, link **newLink);
 void dequeueLink(link **bucket_h, link **reflect_t);
+int lq_size(link **first, link **last);
