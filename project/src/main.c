@@ -144,8 +144,9 @@ int main(int argc, char *argv[]){
 			// #region
 			
 			LCDClear(); // TESTING CODE _ ATHOME
-			LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
-			LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
+			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
+			LCDWriteStringXY(0, 1, "BP:     CP:"); // TESTING CODE _ ATHOME
 			// mTimer(1000); // TESTING CODE _ ATHOME
 
 
@@ -516,10 +517,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(12,1,bucket_move,4);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
