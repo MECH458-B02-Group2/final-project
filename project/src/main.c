@@ -597,13 +597,7 @@ int lq_size(link **head, link **tail) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-// Optical Sensor for Magnetic Stage (OI)
-// s
-//ISR(INT0_vect){
-	// STATE = 1; // will goto MAGNETIC_STAGE
-//} // PD0 = OI (INT0) (Active Lo)
-
-
+// Optical Sensor for Reflective Stage (OR)
 ISR(INT2_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
@@ -693,9 +687,9 @@ ISR(ADC_vect) {
 } // ADC end
 
 /* PE5 = RampDown (Active Lo) */
-//ISR(INT5_vect){
-//	STATE = 5;
-//} 
+ISR(INT5_vect){
+	
+} 
 
 
 ISR(BADISR_vect)
