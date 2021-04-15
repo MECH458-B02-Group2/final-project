@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
 	Steel = 0;
 	White = 0;
 	Black = 0;
+	SORT = 0;
 
 	// Linked Queue
 	lq_setup(&bucket_h, &reflect_t); // Set all pointers to NULL
@@ -139,68 +140,68 @@ int main(int argc, char *argv[]){
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
 			
-			// LCDClear(); // TESTING CODE _ ATHOME
-			// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
-			// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
-			// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
-			// mTimer(1000); // TESTING CODE _ ATHOME
-			// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
-			// mTimer(4000); // TESTING CODE _ ATHOME
+			/*
+			LCDClear(); // TESTING CODE _ ATHOME
+			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
+			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
+			LCDWriteStringXY(0, 1, "BP:     CP:"); // TESTING CODE _ ATHOME
+			mTimer(1000); // TESTING CODE _ ATHOME
 
 
-			// // Determine which type of material
-			// if(bucket_val==1) {
-			// 	LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
-			// 	bucket_psn=1536;
-			// 	Alum++;
-			// } else if(bucket_val==2) {
-			// 	LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
-			// 	bucket_psn=512;
-			// 	Steel++;
-			// } else if(bucket_val==3) {
-			// 	LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
-			// 	bucket_psn=1024;
-			// 	White++;
-			// } else if(bucket_val==4) {
-			// 	LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
-			// 	bucket_psn=0;
-			// 	Black++;
-			// }
-			// // mTimer(2000); // TESTING CODE _ ATHOME
+			// Determine which type of material
+			if(bucket_val==1) {
+				LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+				bucket_psn=1536;
+				Alum++;
+			} else if(bucket_val==2) {
+				LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+				bucket_psn=512;
+				Steel++;
+			} else if(bucket_val==3) {
+				LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+				bucket_psn=1024;
+				White++;
+			} else if(bucket_val==4) {
+				LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+				bucket_psn=0;
+				Black++;
+			}
+			// mTimer(2000); // TESTING CODE _ ATHOME
 
-			// LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ ATHOME
+			LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ ATHOME
 			
-			// // TESTING CODE _ ATHOME
-			// if (CurPosition < 0) {
-			// 	LCDWriteStringXY(11, 1, "-");
-			// } else {
-			// 	LCDWriteStringXY(11, 1, "+");
-			// }
-			// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
-			// // end TESTING CODE _ ATHOME
+			// TESTING CODE _ ATHOME
+			if (CurPosition < 0) {
+				LCDWriteStringXY(11, 1, "-");
+			} else {
+				LCDWriteStringXY(11, 1, "+");
+			}
+			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+			// end TESTING CODE _ ATHOME
 
-			// // TESTING CODE _ ATHOME
-			// if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
-			// 	// DC_Stop(); - moved to beginning of ISR3 for now
-			// 	// 200 steps per revolution -> 1.8 degrees per rev
-			// 	bucket_move = bucket_psn - (CurPosition%2048);
-			// 	if(bucket_move == -512 || bucket_move == 1536) {
-			// 		stepccw(512);
-			// 	} else if(bucket_move == 512 || bucket_move == -1536){
-			// 		stepcw(512);
-			// 	} else if(abs(bucket_move) == 1024){
-			// 		stepcw(1024);
-			// 	}
-			// } // CW/CCW might be backwards
+			// TESTING CODE _ ATHOME
+			if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
+				// DC_Stop(); - moved to beginning of ISR3 for now
+				// 200 steps per revolution -> 1.8 degrees per rev
+				bucket_move = bucket_psn - (CurPosition%2048);
+				if(bucket_move == -512 || bucket_move == 1536) {
+					stepccw(512);
+				} else if(bucket_move == 512 || bucket_move == -1536){
+					stepcw(512);
+				} else if(abs(bucket_move) == 1024){
+					stepcw(1024);
+				}
+			} // CW/CCW might be backwards
 
-			// // TESTING CODE _ ATHOME
-			// if (CurPosition < 0) {
-			// 	LCDWriteStringXY(11, 1, "-");
-			// } else {
-			// 	LCDWriteStringXY(11, 1, "+");
-			// }
-			// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
-			// // end TESTING CODE _ ATHOME
+			// TESTING CODE _ ATHOME
+			if (CurPosition < 0) {
+				LCDWriteStringXY(11, 1, "-");
+			} else {
+				LCDWriteStringXY(11, 1, "+");
+			}
+			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+			// end TESTING CODE _ ATHOME
+			*/
 
 			// end Bucket Stage - TESTING CODE _ ATHOME
 			// #endregion
@@ -492,7 +493,7 @@ ISR(INT3_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
 	// MASK the bit to see if it's lo
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
-	SORT = 3; // will goto BUCKET_STAGE
+	SORT = 1; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
 
 // Pause button
@@ -516,10 +517,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(12,1,bucket_move,4);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
+	// mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
+	// mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
+	// mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
@@ -538,14 +542,14 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		// mTimer(100); // TESTING CODE - ATHOME
+		// mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
 
 		LCDClear(); // TESTING CODE - ATHOME & ATLAB
-		LCDWriteIntXY(0,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
+		LCDWriteIntXY(12,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
 			newLink->reflect_val = 1;
