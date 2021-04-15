@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
-	EIMSK |= (_BV(INT5)); // enable INT4
+	EIMSK |= (_BV(INT5)); // enable INT5
 
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]){
 
 	while(1) {
 
-		// SORTING (INT3)
+		// SORTING (INT3 Active Lo)
 		if(SORT) {
 			bucket_psn = 0;
 			bucket_val = 0;
@@ -521,7 +521,7 @@ ISR(INT3_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
 	// MASK the bit to see if it's lo
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
-	STATE = 3; // will goto BUCKET_STAGE
+	SORT = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
 
 // Pause button
