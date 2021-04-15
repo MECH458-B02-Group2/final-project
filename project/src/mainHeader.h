@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------------------------------//
 
 // State Machine
-volatile int STATE;
+volatile int SORT;
 
 // Stepper Motor
 volatile int PolePosition;
