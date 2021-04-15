@@ -182,7 +182,6 @@ int main(int argc, char *argv[]){
 	bucket_psn = 0;
 	bucket_val = 0;
 	bucket_move = 0;
-	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
 
 	// if statements trying to handle int3 triggering with no link in queue
 	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
@@ -190,14 +189,6 @@ int main(int argc, char *argv[]){
 
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
-
-		// LCDClear(); // TESTING CODE _ ATHOME
-		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
-		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
-		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
-		// mTimer(1000); // TESTING CODE _ ATHOME
-		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
-		//mTimer(4000); // TESTING CODE _ ATHOME
 
 		// Dequeue link after the reading have been extracted for the sorting algorithm
 		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
@@ -237,6 +228,15 @@ int main(int argc, char *argv[]){
 
 		// Bucket Stage - TESTING CODE _ ATHOME
 		// #region
+
+		
+		LCDClear(); // TESTING CODE _ ATHOME
+		LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
+		LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+		LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
+		// mTimer(1000); // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
+		//mTimer(4000); // TESTING CODE _ ATHOME
 
 		// // Determine which type of material
 		// if(bucket_val==1) {
