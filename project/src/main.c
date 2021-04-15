@@ -63,13 +63,14 @@ int main(int argc, char *argv[]){
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
-	PORTA = 0b00000000;
+	PORTA = 0b00000000; // Initialize stepper motor coils
+	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
 	step_home(); // Working correctly as per TR3
 	
-	LCDClear(); // TESTING CODE - to be deleted
-	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
+	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteString("ACTIVE"); // TESTING CODE _ ATHOME & ATLAB
 	
 	// DC Motor
 	// Set PORTB (DC motor port) to output (B7 = PWM, B3 = IA, B2 = IB, B1 = EA, B0 = EB)
@@ -314,27 +315,27 @@ int main(int argc, char *argv[]){
 
 	PAUSE_STAGE:
  
-	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
-	DC_Stop(); // Stop the DC Motor
-	LCDClear();
-	LCDWriteStringXY(0,0,"Al");
-	LCDWriteIntXY(3,0,Alum,2);
-	LCDWriteStringXY(6,0,"St");
-	LCDWriteIntXY(9,0,Steel,2);
-	LCDWriteStringXY(0,1,"Wh");
-	LCDWriteIntXY(3,1,White,2);
-	LCDWriteStringXY(6,1,"Bl");
-	LCDWriteIntXY(9,1,Black,2);
-	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(12,1,bucket_move,4);
-	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
-	while(STATE == 4); // Wait until pause button is pressed again
+	// LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
+	// DC_Stop(); // Stop the DC Motor
+	// LCDClear();
+	// LCDWriteStringXY(0,0,"Al");
+	// LCDWriteIntXY(3,0,Alum,2);
+	// LCDWriteStringXY(6,0,"St");
+	// LCDWriteIntXY(9,0,Steel,2);
+	// LCDWriteStringXY(0,1,"Wh");
+	// LCDWriteIntXY(3,1,White,2);
+	// LCDWriteStringXY(6,1,"Bl");
+	// LCDWriteIntXY(9,1,Black,2);
+	// LCDWriteStringXY(12,0,"Belt");
+	// LCDWriteIntXY(12,1,bucket_move,4);
+	// bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
+	// while(STATE == 4); // Wait until pause button is pressed again
 	
-	DC_Start(); // Start the DC Motor
+	// DC_Start(); // Start the DC Motor
 	
-	STATE = 0;
-	LCDClear();
-	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
+	// STATE = 0;
+	// LCDClear();
+	// LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
 	// #endregion PAUSE STAGE ----------------------------------------------------------------------------//
@@ -648,12 +649,41 @@ ISR(INT3_vect){
 ISR(INT4_vect) {
 	// mTimer(20); // TESTING CODE _ ATHOME
 	
-	if(STATE == 4) {
-		STATE = 0; // will goto POLLING_STAGE
-	}
-	else {
-		STATE = 4; // will goto PAUSE_STAGE
-	}
+	// OLD code
+	// if(STATE == 4) {
+	// 	STATE = 0; // will goto POLLING_STAGE
+	// }
+	// else {
+	// 	STATE = 4; // will goto PAUSE_STAGE
+	// }
+
+	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
+	DC_Stop(); // Stop the DC Motor
+	LCDClear();
+	LCDWriteStringXY(0,0,"Al");
+	LCDWriteIntXY(3,0,Alum,2);
+	LCDWriteStringXY(6,0,"St");
+	LCDWriteIntXY(9,0,Steel,2);
+	LCDWriteStringXY(0,1,"Wh");
+	LCDWriteIntXY(3,1,White,2);
+	LCDWriteStringXY(6,1,"Bl");
+	LCDWriteIntXY(9,1,Black,2);
+	LCDWriteStringXY(12,0,"Belt");
+	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteIntXY(12,1,bucket_move,4);
+
+	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released
+
+	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed
+
+	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released
+	
+	DC_Start(); // Start the DC Motor
+	
+	STATE = 0;
+	LCDClear();
+	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD
+
 } // Pause
 
 ISR(ADC_vect) {
