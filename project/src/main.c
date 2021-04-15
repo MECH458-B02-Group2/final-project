@@ -676,8 +676,7 @@ ISR(INT4_vect) {
 	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
-	
-	STATE = 0;
+
 	LCDClear();
 	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD
 
