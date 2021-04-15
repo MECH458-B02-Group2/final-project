@@ -39,12 +39,13 @@ int main(int argc, char *argv[]){
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
-	EICRB |= _BV(ISC41) | _BV(ISC40); // INT4 Rising edge interrupt with Active Lo - wait until button is released
+	EICRB |= _BV(ISC41); // INT4 Falling edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
 	ADCSRA |= _BV(ADEN); // enable ADC
 	ADCSRA |= _BV(ADIE); // enable interrupt of ADC
+	ADCSRA |= _BV(ADPS0) | _BV(ADPS2); // ADC Prescaler
 	ADMUX |= _BV(REFS0); // Analog supply voltage (AVCC) with external capacitor at AREF pin
 	ADMUX |= _BV(MUX0);  // Use PF1 (ADC1) as the input channel
 
@@ -181,58 +182,122 @@ int main(int argc, char *argv[]){
 	bucket_move = 0;
 	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 
-	// Pull value from linked list head
-	bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
+	// if (bucket_h) {
+		// Pull value from linked list head
+		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
-	//LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,0,bucket_val,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//LCDWriteIntXY(0,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
-	//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
-	// Dequeue link after the reading have been extracted for the sorting algorithm
-	dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
+		// LCDClear(); // TESTING CODE _ TO BE DELETED - writing on the second line
+		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ stepper-debug
+		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ stepper-debug
+		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ TO BE DELETED
+		// mTimer(1000); // TESTING CODE _ stepper-debug
+		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ TO BE DELETED - writing on the second line
+		//mTimer(4000); // TESTING CODE _ TO BE DELETED - writing on the second line
+		// Dequeue link after the reading have been extracted for the sorting algorithm
+		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
-	// Determine which type of material
-	if(bucket_val==1) {
-		bucket_psn=50;
-		Alum++;
-		//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==2) {
-		bucket_psn=150;
-		Steel++;
-		//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==3) {
-		bucket_psn=100;
-		White++;
-		//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
-	} else if(bucket_val==4) {
-		bucket_psn=0;
-		Black++;
-		//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
-	}
-	// mTimer(2000); // TESTING CODE _ TO BE DELETED
-	// For ease of use with potentiometer
-	// LCDWriteIntXY(0, 1, bucket_val, 4);
-
-	if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-		// DC_Stop(); - moved to beginning of ISR3 for now
-		// 200 steps per revolution -> 1.8 degrees per rev
-		bucket_move = bucket_psn - (CurPosition%200);
-		if(bucket_move == -50 || bucket_move == 150) {
-			//stepcw(50); 
-			stepcw(512); // FOR OUR AT HOME SETUP
-		} else if(bucket_move == 50 || bucket_move == -150){
-			//stepccw(50);
-			stepccw(512); // FOR OUR AT HOME SETUP
-		} else if(abs(bucket_move) == 100){
-			//stepcw(100);
-			stepcw(1024); // FOR OUR AT HOME SETUP
+		// Determine which type of material
+		if(bucket_val==1) {
+			bucket_psn=50;
+			Alum++;
+			// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		} else if(bucket_val==2) {
+			bucket_psn=150;
+			Steel++;
+			// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+		} else if(bucket_val==3) {
+			bucket_psn=100;
+			White++;
+			// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+		} else if(bucket_val==4) {
+			bucket_psn=0;
+			Black++;
+			// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
 		}
-	} // CW/CCW might be backwards
-	// Can add direction later, Nigel had a good idea for it to keep track of directionality
-	// Only really matters when its the same distance either way
-	// Table is stopped either way so does it really matter?
-	DC_Start();
+		// mTimer(2000); // TESTING CODE _ TO BE DELETED
+
+		if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+			// DC_Stop(); - moved to beginning of ISR3 for now
+			// 200 steps per revolution -> 1.8 degrees per rev
+			bucket_move = bucket_psn - (CurPosition%200);
+			if(bucket_move == -50 || bucket_move == 150) {
+				stepccw(50);
+			} else if(bucket_move == 50 || bucket_move == -150){
+				stepcw(50);
+			} else if(abs(bucket_move) == 100){
+				stepcw(100);
+			}
+		}
+
+		// AT HOME SETUP - (bucket stage)
+		// #region
+
+		// // Determine which type of material
+		// if(bucket_val==1) {
+		// 	LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ TO BE DELETED
+		// 	bucket_psn=1536;
+		// 	Alum++;
+		// } else if(bucket_val==2) {
+		// 	LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ TO BE DELETED
+		// 	bucket_psn=512;
+		// 	Steel++;
+		// } else if(bucket_val==3) {
+		// 	LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ TO BE DELETED
+		// 	bucket_psn=1024;
+		// 	White++;
+		// } else if(bucket_val==4) {
+		// 	LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
+		// 	bucket_psn=0;
+		// 	Black++;
+		// }
+		// // mTimer(2000); // TESTING CODE _ TO BE DELETED
+
+		// LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ stepper-debug
+		
+		// // TESTING CODE _ stepper-debug
+		// if (CurPosition < 0) {
+		// 	LCDWriteStringXY(11, 1, "-");
+		// } else {
+		// 	LCDWriteStringXY(11, 1, "+");
+		// }
+		// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+		// // end TESTING CODE _ stepper-debug
+
+		// // For AT HOME SETUP
+		// if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
+		// 	// DC_Stop(); - moved to beginning of ISR3 for now
+		// 	// 200 steps per revolution -> 1.8 degrees per rev
+		// 	bucket_move = bucket_psn - (CurPosition%2048);
+		// 	if(bucket_move == -512 || bucket_move == 1536) {
+		// 		stepccw(512);
+		// 	} else if(bucket_move == 512 || bucket_move == -1536){
+		// 		stepcw(512);
+		// 	} else if(abs(bucket_move) == 1024){
+		// 		stepcw(1024);
+		// 	}
+		// } // CW/CCW might be backwards
+
+		// // TESTING CODE _ stepper-debug
+		// if (CurPosition < 0) {
+		// 	LCDWriteStringXY(11, 1, "-");
+		// } else {
+		// 	LCDWriteStringXY(11, 1, "+");
+		// }
+		// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+		// // end TESTING CODE _ stepper-debug
+
+		// end AT HOME SETUP
+		// #endregion
+
+		// Can add direction later, Nigel had a good idea for it to keep track of directionality
+		// Only really matters when its the same distance either way
+		// Table is stopped either way so does it really matter?
+
+	// }
+	
 	STATE = 0; //Reset the state variable
+	DC_Start(); // Start the DC motor
 	goto POLLING_STAGE;
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
@@ -257,7 +322,7 @@ int main(int argc, char *argv[]){
 	LCDWriteStringXY(6,1,"Bl");
 	LCDWriteIntXY(9,1,Black,2);
 	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(13,1,bucket_move,2);
+	LCDWriteIntXY(12,1,bucket_move,4);
 	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ TO BE DELETED - size of lq
 	while(STATE == 4); // Wait until pause button is pressed again
 	
@@ -295,7 +360,7 @@ int main(int argc, char *argv[]){
 //Homing function
 void step_home(void) {
 
-	PolePosition = 0; // set the zero
+	PolePosition = 1; // set to 1 for either cw or ccw home
 	
 	LCDClear();
 	LCDWriteString("HOMING..");
@@ -319,20 +384,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			PORTA = 0b00001000 ; // Small - TEST
-			//PORTA = 0b00110000;
+			// PORTA = 0b00001000 ; // Small - TEST
+			PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000100; // Small - TEST
-			//PORTA = 0b00000110;
+			// PORTA = 0b00000100; // Small - TEST
+			PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00000010; // Small - TEST
-			//PORTA = 0b00101000;
+			// PORTA = 0b00000010; // Small - TEST
+			PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000001; // Small - TEST
-			//PORTA = 0b00000101;
+			// PORTA = 0b00000001; // Small - TEST
+			PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -344,8 +409,8 @@ void stepcw (int step) {
 		}
 		
 		//if(step == 1){
-		mTimer(10); // FOR OUR APPARATUS
-		//mTimer(20); // Step Delay
+		// mTimer(5); // FOR OUR APPARATUS
+		mTimer(20); // LAB APPARATUS
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -366,20 +431,20 @@ void stepccw (int step) {
 
 		switch (PolePosition) {
 			case 1:
-			PORTA = 0b00001000 ; // Small - TEST
-			//PORTA = 0b00110000;
+			// PORTA = 0b00001000 ; // Small - TEST
+			PORTA = 0b00110000;
 			break;
 			case 2:
-			PORTA = 0b00000100; // Small - TEST
-			//PORTA = 0b00000110;
+			// PORTA = 0b00000100; // Small - TEST
+			PORTA = 0b00000110;
 			break;
 			case 3:
-			PORTA = 0b00000010; // Small - TEST
-			//PORTA = 0b00101000;
+			// PORTA = 0b00000010; // Small - TEST
+			PORTA = 0b00101000;
 			break;
 			case 4:
-			PORTA = 0b00000001; // Small - TEST
-			//PORTA = 0b00000101;
+			// PORTA = 0b00000001; // Small - TEST
+			PORTA = 0b00000101;
 			break;
 			default:
 			PORTA = 0;
@@ -391,8 +456,8 @@ void stepccw (int step) {
 		}
 
 		//if(step == 1){
-		mTimer(10); // FOR OUR APPARATUS
-		//mTimer(20); // Step Delay
+		// mTimer(5); // FOR OUR APPARATUS
+		mTimer(20); // LAB APPARATUS
 		//} else if(step == 50){
 		//	mTimer(fifty[j]);
 		//} else if(step == 100){
@@ -527,16 +592,16 @@ void dequeueLink(link **bucket_h, link **reflect_t){
 // Description: This subroutine measures the number of links from one pointer to another. This will 
 //              mostly be used for debugging purposes.
 
-int lq_size(link **first, link **last) {
+int lq_size(link **head, link **tail) {
 
 	link 	*temp;			/* will store the link while traversing the queue */
 	int 	numElements;
 
 	numElements = 0;
 
-	temp = *first;			/* point to the first item in the list */
+	temp = *head;			/* point to the first item in the list */
 
-	while(temp != *last){
+	while(temp != NULL){
 		numElements++;
 		temp = temp->next;
 	}/*while*/
@@ -559,7 +624,7 @@ int lq_size(link **first, link **last) {
 
 
 ISR(INT2_vect){
-	mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
+	// mTimer(100); // TEST CODE - to be deleted - ruins ADC readings on apparatus
 	if((PIND & 0b00000100) == 0b00000100){
 		STATE = 2; // Enter state 2 after finished readings
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
@@ -569,15 +634,15 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	mTimer(20); // TEST CODE - to be deleted - ruins ADC readings on apparatus
+	// mTimer(100); // TEST CODE - to be deleted
+	// MASK the bit to see if it's lo
 	DC_Stop(); // TESTING CODE - to be deleted
 	STATE = 3; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
 
 // Pause button
 ISR(INT4_vect) {
-	//Home board debugging purposes
-	mTimer(20); // debounce
+	// mTimer(20); // TESTING CODE _ HOME APPARATUS
 	
 	if(STATE == 4) {
 		STATE = 0; // will goto POLLING_STAGE
@@ -597,14 +662,14 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		mTimer(20); // TEST CODE - to be deleted - for button debouncing
+		// mTimer(100); // TEST CODE - to be deleted - for button debouncing
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
 
-		//LCDClear(); // TEST CODE - to be deleted
-		//LCDWriteIntXY(0,0,reflect_val,4); // TEST CODE - to be deleted
+		LCDClear(); // TEST CODE - to be deleted
+		LCDWriteIntXY(0,0,reflect_val,4); // TEST CODE - to be deleted
 		//mTimer(3000); // TEST CODE - to be deleted
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
@@ -620,13 +685,8 @@ ISR(ADC_vect) {
 			newLink->reflect_val = 4;
 			//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ TO BE DELETED
 		}
-		
-		//newLink->reflect_val = reflect_val;
+
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
-		
-		//LCDClear(); // TESTING CODE _ TO BE DELETED
-		//LCDWriteString("ENQUEUE"); // TESTING CODE _ TO BE DELETED
-		//mTimer(2000); // TESTING CODE - to be deleted
 
 	} // Continue taking readings and then add to the linked list
 } // ADC end

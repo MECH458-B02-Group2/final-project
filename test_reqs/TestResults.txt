@@ -85,4 +85,26 @@ Attempt 3
   Aluminum to white messes up
   CCW to steel from black messes up
 
+
+6 - Sorting Finalization
+
+Attempt 1
+  Pieces stop at bucket stage
+
+Attempt 2
+  Pieces stop at bucket stage still
+
+Attempt 3
+  Changed if statement in bucket stage
+  Moved DC_Start() outside if statement 
+  Pieces kinda sorted but at some point they all got dumped without any sorting
+
+Attempt 4
+  Changed INT4 (pause button) to falling edge (unrelated, just good to note)
+  Added ADC prescaler
+  Pieces almost sorted
+  Swapped bucket_psn for aluminum and steel
+  Pieces sort perfectly
+
+
   
