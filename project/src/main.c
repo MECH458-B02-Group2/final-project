@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
-	EICRB |= _BV(ISC41); // INT4 Falling edge interrupt with Active Lo - wait until button is released
+	EICRA |= _BV(ISC41); // INT4 Falling edge interrupt with Active Lo - wait until button is released
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
@@ -63,13 +63,14 @@ int main(int argc, char *argv[]){
 	// I/O Ports (Check necessity of these)
 	DDRD = 0b11110000;	// Going to set up INT2 & INT3 on PORTD
 	DDRA = 0b00111111; // A7 as input for HE sensor, A0-A5 as output for stepper motor
-	PORTA = 0b00000000;
+	PORTA = 0b00000000; // Initialize stepper motor coils
+	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
 	step_home(); // Working correctly as per TR3
 	
-	LCDClear(); // TESTING CODE - to be deleted
-	LCDWriteString("ACTIVE"); // TESTING CODE - to be deleted
+	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteString("ACTIVE"); // TESTING CODE _ ATHOME & ATLAB
 	
 	// DC Motor
 	// Set PORTB (DC motor port) to output (B7 = PWM, B3 = IA, B2 = IB, B1 = EA, B0 = EB)
@@ -181,7 +182,6 @@ int main(int argc, char *argv[]){
 	bucket_psn = 0;
 	bucket_val = 0;
 	bucket_move = 0;
-	//bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
 
 	// if statements trying to handle int3 triggering with no link in queue
 	// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
@@ -189,14 +189,6 @@ int main(int argc, char *argv[]){
 
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
-
-		// LCDClear(); // TESTING CODE _ ATHOME
-		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
-		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
-		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
-		// mTimer(1000); // TESTING CODE _ ATHOME
-		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
-		//mTimer(4000); // TESTING CODE _ ATHOME
 
 		// Dequeue link after the reading have been extracted for the sorting algorithm
 		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
@@ -219,10 +211,8 @@ int main(int argc, char *argv[]){
 			Black++;
 			// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
 		}
-		// mTimer(2000); // TESTING CODE _ ATHOME
 
 		if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-			// DC_Stop(); - moved to beginning of ISR3 for now
 			// 200 steps per revolution -> 1.8 degrees per rev
 			bucket_move = bucket_psn - (CurPosition%200);
 			if(bucket_move == -50 || bucket_move == 150) {
@@ -236,6 +226,15 @@ int main(int argc, char *argv[]){
 
 		// Bucket Stage - TESTING CODE _ ATHOME
 		// #region
+		
+		// LCDClear(); // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
+		// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
+		// mTimer(1000); // TESTING CODE _ ATHOME
+		// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
+		//mTimer(4000); // TESTING CODE _ ATHOME
+
 
 		// // Determine which type of material
 		// if(bucket_val==1) {
@@ -294,10 +293,6 @@ int main(int argc, char *argv[]){
 		// end Bucket Stage - TESTING CODE _ ATHOME
 		// #endregion
 
-		// Can add direction later, Nigel had a good idea for it to keep track of directionality
-		// Only really matters when its the same distance either way
-		// Table is stopped either way so does it really matter?
-
 	// }
 	
 	STATE = 0; //Reset the state variable
@@ -313,28 +308,8 @@ int main(int argc, char *argv[]){
 	//              is pressed again.
 
 	PAUSE_STAGE:
- 
-	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
-	DC_Stop(); // Stop the DC Motor
-	LCDClear();
-	LCDWriteStringXY(0,0,"Al");
-	LCDWriteIntXY(3,0,Alum,2);
-	LCDWriteStringXY(6,0,"St");
-	LCDWriteIntXY(9,0,Steel,2);
-	LCDWriteStringXY(0,1,"Wh");
-	LCDWriteIntXY(3,1,White,2);
-	LCDWriteStringXY(6,1,"Bl");
-	LCDWriteIntXY(9,1,Black,2);
-	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(12,1,bucket_move,4);
-	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
-	while(STATE == 4); // Wait until pause button is pressed again
-	
-	DC_Start(); // Start the DC Motor
 	
 	STATE = 0;
-	LCDClear();
-	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD for Test 2 - Pause functionality
 	goto POLLING_STAGE;
 
 	// #endregion PAUSE STAGE ----------------------------------------------------------------------------//
@@ -646,14 +621,35 @@ ISR(INT3_vect){
 
 // Pause button
 ISR(INT4_vect) {
-	// mTimer(20); // TESTING CODE _ ATHOME
+
+	mTimer(100); // TESTING CODE _ ATHOME
+
+	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
+	DC_Stop(); // Stop the DC Motor
+	LCDClear();
+	LCDWriteStringXY(0,0,"Al");
+	LCDWriteIntXY(3,0,Alum,2);
+	LCDWriteStringXY(6,0,"St");
+	LCDWriteIntXY(9,0,Steel,2);
+	LCDWriteStringXY(0,1,"Wh");
+	LCDWriteIntXY(3,1,White,2);
+	LCDWriteStringXY(6,1,"Bl");
+	LCDWriteIntXY(9,1,Black,2);
+	LCDWriteStringXY(12,0,"Belt");
+	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
+	LCDWriteIntXY(12,1,bucket_move,4);
+ 
+	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
+
+	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
+
+	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
 	
-	if(STATE == 4) {
-		STATE = 0; // will goto POLLING_STAGE
-	}
-	else {
-		STATE = 4; // will goto PAUSE_STAGE
-	}
+	DC_Start(); // Start the DC Motor
+
+	LCDClear();
+	LCDWriteStringXY(0, 0, "ACTIVE"); // Output "ACTIVE" to LCD
+
 } // Pause
 
 ISR(ADC_vect) {
@@ -674,7 +670,6 @@ ISR(ADC_vect) {
 
 		LCDClear(); // TESTING CODE - ATHOME & ATLAB
 		LCDWriteIntXY(0,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
-		//mTimer(3000); // TESTING CODE - ATHOME
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
 			newLink->reflect_val = 1;
