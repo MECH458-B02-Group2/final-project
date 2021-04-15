@@ -66,6 +66,7 @@ int main(int argc, char *argv[]){
 	PORTA = 0b00000000;
 	
 	// Stepper Motor
+	accel_curve();
 	step_home(); // Working correctly as per TR3
 	
 	LCDClear(); // TESTING CODE - to be deleted
@@ -363,7 +364,38 @@ int main(int argc, char *argv[]){
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
+// Acceleration Curve Generator
+
+void accel_curve(void) {
+	int sq = sizeof(quarter);
+	int sh = sizeof(half);
+	int sa = sizeof(accel);
+	int sd = sizeof(decel);
+
+	for (int i=0; i<sq; i++) {
+		if(i<sa) {
+			quarter[i] = accel[i];
+		} else if(i>(sq-sd-1)) {
+			quarter[i] = decel[sq-i];
+		} else {
+			quarter[i] = min_accel;
+		}
+	} // for quarter
+
+	for (int i=0; i<sh; i++) {
+		if(i<sizeof(accel)) {
+			half[i] = accel[i];
+		} else if(i>(sh-sd-1)) {
+			half[i] = decel[sh-i];
+		} else {
+			half[i] = min_accel;
+		}
+	} // for half
+	
+} // Acceleration Curve
+
 //Homing function
+
 void step_home(void) {
 
 	PolePosition = 1; // set to 1 for either cw or ccw home
@@ -414,14 +446,14 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 		
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
+		if(step == 1){
+		mTimer(5); // TESTING CODE _ ATHOME
+		// mTimer(20); // TESTING CODE _ ATLAB
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
 		CurPosition++;
 	} // for
 } // stepcw
@@ -461,14 +493,14 @@ void stepccw (int step) {
 			PolePosition--;
 		}
 
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
+		if(step == 1){
+		mTimer(5); // TESTING CODE _ ATHOME
 		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
 		CurPosition--;
 	} // for
 } // stepccw
