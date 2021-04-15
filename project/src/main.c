@@ -81,34 +81,6 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-
-	// TEST BLOCK TO VALIDATE STEPPER MOTOR - LCD can't display negatives, hence abs(Cur)
-	// ATHOME & ATLAB
-	/*
-	LCDClear();
-	LCDWriteStringXY(0,0,"Pole");
-	LCDWriteIntXY(5,0,PolePosition,4);
-	LCDWriteStringXY(0,1,"Curr");
-	LCDWriteIntXY(5,1,abs(CurPosition),4);
-	stepccw(45); // TESTING CODE - to be deleted
-	LCDWriteIntXY(5,0,PolePosition,4);
-	LCDWriteIntXY(5,1,abs(CurPosition),4);
-	mTimer(2000);
-	stepccw(69); // TESTING CODE - to be deleted
-	LCDWriteIntXY(5,0,PolePosition,4);
-	LCDWriteIntXY(5,1,abs(CurPosition),4);
-	mTimer(2000);
-	stepcw(34); // TESTING CODE - to be deleted
-	LCDWriteIntXY(5,0,PolePosition,4);
-	LCDWriteIntXY(5,1,abs(CurPosition),4);
-	mTimer(2000);
-	stepccw(27); // TESTING CODE - to be deleted
-	LCDWriteIntXY(5,0,PolePosition,4);
-	LCDWriteIntXY(5,1,abs(CurPosition),4);
-	mTimer(2000);
-	LCDClear(); // TESTING CODE - to be deleted
-	LCDWriteString("Stepping"); // TESTING CODE - to be deleted
-	*/
 	
 // #endregion
 	
