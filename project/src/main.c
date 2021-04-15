@@ -147,7 +147,6 @@ int main(int argc, char *argv[]){
 			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
 			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(0, 1, "BP:     CP:"); // TESTING CODE _ ATHOME
-			mTimer(1000); // TESTING CODE _ ATHOME
 
 
 			// Determine which type of material
@@ -183,7 +182,6 @@ int main(int argc, char *argv[]){
 
 			// TESTING CODE _ ATHOME
 			if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
-				// DC_Stop(); - moved to beginning of ISR3 for now
 				// 200 steps per revolution -> 1.8 degrees per rev
 				bucket_move = bucket_psn - (CurPosition%2048);
 				if(bucket_move == -512 || bucket_move == 1536) {
@@ -193,7 +191,7 @@ int main(int argc, char *argv[]){
 				} else if(abs(bucket_move) == 1024){
 					stepcw(1024);
 				}
-			} // CW/CCW might be backwards
+			} // end TESTING CODE _ ATHOME
 
 			// TESTING CODE _ ATHOME
 			if (CurPosition < 0) {
@@ -216,10 +214,20 @@ int main(int argc, char *argv[]){
 		// RAMP DOWN (INT5 Button Active Lo)
 		RAMPDOWN_TIMER = 0;
 		while((RAMPDOWN_FLAG) && (lq_size(&bucket_h, &reflect_t) == 0)) {
+			if(RAMPDOWN_TIMER == 0) {
+				LCDClear();
+				LCDWriteString("Checking belt...");
+			}
 			RAMPDOWN_TIMER++;
 			mTimer(10); // Each count of RAMPDOWN_TIMER is 10ms
 			if(RAMPDOWN_TIMER == 500) {
+				LCDClear();
+				LCDWriteStringXY(6, 0, "RAMP");
+				LCDWriteStringXY(6, 1, "DOWN");
 				DC_Stop();
+				PORTA = 0b00000000;
+				PORTB = 0b00000000;
+
 				return(0);
 			}
 		}
@@ -549,6 +557,7 @@ ISR(INT4_vect) {
 
 /* PE5 = RampDown (Active Lo) */
 ISR(INT5_vect){
+	// mTimer(100); // TESTING CODE _ ATHOME
 	RAMPDOWN_FLAG = 1;
 } 
 
@@ -573,16 +582,16 @@ ISR(ADC_vect) {
 
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
 			newLink->reflect_val = 1;
-			//LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME & ATLAB
+			LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(St_low <= reflect_val && reflect_val <= St_high) {
 			newLink->reflect_val = 2;
-			//LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME & ATLAB
+			LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
 			newLink->reflect_val = 3;
-			//LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME & ATLAB
+			LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
 			newLink->reflect_val = 4;
-			//LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME & ATLAB
+			LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME & ATLAB
 		}
 
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
