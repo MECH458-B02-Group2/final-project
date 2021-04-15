@@ -109,6 +109,7 @@ int main(int argc, char *argv[]){
 			// Dequeue link after the reading have been extracted for the sorting algorithm
 			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
+			/*
 			// Determine which type of material
 			if(bucket_val==1) {
 				bucket_psn=50;
@@ -140,10 +141,12 @@ int main(int argc, char *argv[]){
 				}
 			}
 
+			*/
+
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
 			
-			/*
+			
 			LCDClear(); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
 			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
@@ -202,7 +205,7 @@ int main(int argc, char *argv[]){
 			}
 			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
 			// end TESTING CODE _ ATHOME
-			*/
+			
 
 			// end Bucket Stage - TESTING CODE _ ATHOME
 			// #endregion
@@ -553,7 +556,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
@@ -570,13 +573,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(13,1,(lq_size(&bucket_h, &reflect_t)),2);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
@@ -588,7 +591,7 @@ ISR(INT4_vect) {
 
 /* PE5 = RampDown (Active Lo) */
 ISR(INT5_vect){
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	RAMPDOWN_FLAG = 1;
 } 
 
@@ -602,7 +605,7 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		// mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
+		mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
