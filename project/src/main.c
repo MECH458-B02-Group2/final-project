@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
-	accel_curve();
+	//accel_curve();
 	step_home(); // Working correctly as per TR3
 	
 	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
@@ -334,9 +334,7 @@ void stepcw (int step) {
 		if (j<step-1) {
 			PolePosition++;
 		}
-		
-		mTimer(5); // TESTING CODE _ ATHOME
-	/*
+	
 		if(step == 1){
 		mTimer(5); // TESTING CODE _ ATHOME
 		// mTimer(20); // TESTING CODE _ ATLAB
@@ -345,7 +343,6 @@ void stepcw (int step) {
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
-	*/
 		CurPosition++;
 	} // for
 } // stepcw
@@ -385,8 +382,6 @@ void stepccw (int step) {
 			PolePosition--;
 		}
 
-		mTimer(5); // TESTING CODE _ ATHOME
-/*
 		if(step == 1){
 		mTimer(5); // TESTING CODE _ ATHOME
 		// mTimer(20); // TESTING CODE _ ATLAB
@@ -395,7 +390,6 @@ void stepccw (int step) {
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
-		*/
 		CurPosition--;
 	} // for
 
