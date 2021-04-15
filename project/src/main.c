@@ -535,8 +535,7 @@ ISR(INT4_vect) {
 	LCDWriteStringXY(6,1,"Bl");
 	LCDWriteIntXY(9,1,Black,2);
 	LCDWriteStringXY(12,0,"Belt");
-	bucket_move = lq_size(&bucket_h, &reflect_t); // TESTING CODE _ ATHOME & ATLAB
-	LCDWriteIntXY(12,1,bucket_move,4);
+	LCDWriteIntXY(13,1,(lq_size(&bucket_h, &reflect_t)),2);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
 	// mTimer(100); // TESTING CODE _ ATHOME
