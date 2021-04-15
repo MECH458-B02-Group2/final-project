@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
 	// if (bucket_h) {
 
 		// START OF AT LAB
-	/*
+	
 		// Pull value from linked list head
 		bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
 
@@ -204,6 +204,7 @@ int main(int argc, char *argv[]){
 		// Dequeue link after the reading have been extracted for the sorting algorithm
 		dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
+	/*
 		// Determine which type of material
 		if(bucket_val==1) {
 			bucket_psn=50;
@@ -681,7 +682,7 @@ ISR(INT3_vect){
 
 // Pause button
 ISR(INT4_vect) {
-	mTimer(20); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	if(STATE == 4) {
 		STATE = 0; // will goto POLLING_STAGE
