@@ -35,11 +35,13 @@ int main(int argc, char *argv[]){
 	EIMSK |= (_BV(INT2)); // enable INT2
 	EIMSK |= (_BV(INT3)); // enable INT3
 	EIMSK |= (_BV(INT4)); // enable INT4
+	EIMSK |= (_BV(INT5)); // enable INT4
 
 	// EICRA |= _BV(ISC01); // Falling edge interrupt - Active Lo
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
-	EICRA |= _BV(ISC41); // INT4 Falling edge interrupt with Active Lo - wait until button is released
+	EICRA |= _BV(ISC41); // INT4 Falling edge - Active Lo
+	EICRA |= _BV(ISC51); // INT4 Falling edge - Active Lo
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
@@ -595,13 +597,7 @@ int lq_size(link **head, link **tail) {
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
-// Optical Sensor for Magnetic Stage (OI)
-// s
-//ISR(INT0_vect){
-	// STATE = 1; // will goto MAGNETIC_STAGE
-//} // PD0 = OI (INT0) (Active Lo)
-
-
+// Optical Sensor for Reflective Stage (OR)
 ISR(INT2_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
@@ -691,9 +687,9 @@ ISR(ADC_vect) {
 } // ADC end
 
 /* PE5 = RampDown (Active Lo) */
-//ISR(INT5_vect){
-//	STATE = 5;
-//} 
+ISR(INT5_vect){
+	
+} 
 
 
 ISR(BADISR_vect)
