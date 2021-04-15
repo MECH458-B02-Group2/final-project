@@ -102,6 +102,7 @@ Attempt 3
 Attempt 4
   Changed INT4 (pause button) to falling edge (unrelated, just good to note)
   Added ADC prescaler
+  Removed mTimer in ADC ISR
   Pieces almost sorted
   Swapped bucket_psn for aluminum and steel
   Pieces sort perfectly
