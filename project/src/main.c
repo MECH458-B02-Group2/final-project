@@ -499,7 +499,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	mTimer(100); // TESTING CODE _ ATHOME
+	// mTimer(100); // TESTING CODE _ ATHOME
 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
