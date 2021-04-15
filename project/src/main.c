@@ -57,6 +57,8 @@ int main(int argc, char *argv[]){
 	White = 0;
 	Black = 0;
 	SORT = 0;
+	RAMPDOWN_FLAG = 0;
+	int RAMPDOWN_TIMER;
 
 	// Linked Queue
 	lq_setup(&bucket_h, &reflect_t); // Set all pointers to NULL
@@ -210,6 +212,18 @@ int main(int argc, char *argv[]){
 			DC_Start();
 
 		}
+
+		// RAMP DOWN (INT5 Button Active Lo)
+		RAMPDOWN_TIMER = 0;
+		while((RAMPDOWN_FLAG) && (lq_size(&bucket_h, &reflect_t) == 0)) {
+			RAMPDOWN_TIMER++;
+			mTimer(10); // Each count of RAMPDOWN_TIMER is 10ms
+			if(RAMPDOWN_TIMER == 500) {
+				DC_Stop();
+				return(0);
+			}
+		}
+	
 	}
 
 
@@ -532,6 +546,12 @@ ISR(INT4_vect) {
 
 } // Pause
 
+
+/* PE5 = RampDown (Active Lo) */
+ISR(INT5_vect){
+	RAMPDOWN_FLAG = 1;
+} 
+
 ISR(ADC_vect) {
 
 	if(ADC<reflect_val){
@@ -569,12 +589,6 @@ ISR(ADC_vect) {
 
 	} // Continue taking readings and then add to the linked list
 } // ADC end
-
-/* PE5 = RampDown (Active Lo) */
-ISR(INT5_vect){
-	
-} 
-
 
 ISR(BADISR_vect)
 {

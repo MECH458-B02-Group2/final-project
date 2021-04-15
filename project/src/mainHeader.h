@@ -4,6 +4,7 @@
 
 // State Machine
 volatile int SORT;
+volatile int RAMPDOWN_FLAG;
 
 // Stepper Motor
 volatile int PolePosition;
