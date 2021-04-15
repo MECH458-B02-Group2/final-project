@@ -510,7 +510,6 @@ int lq_size(link **head, link **tail) {
 ISR(INT2_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
-		STATE = 2; // Enter state 2 after finished readings
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	}
