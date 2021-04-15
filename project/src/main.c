@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
 	EICRA |= _BV(ISC21) | _BV(ISC20); // Rising edge interrupt - Active Hi
 	EICRA |= _BV(ISC31); // INT3 Falling edge - Active Lo
 	EICRA |= _BV(ISC41); // INT4 Falling edge - Active Lo
-	EICRA |= _BV(ISC51); // INT4 Falling edge - Active Lo
+	EICRA |= _BV(ISC51); // INT5 Falling edge - Active Lo
 
 	// A-D Conversion (ADC) (Reflective Sensor)
 	// Configure ADC -> by default, the ADC input (analog input) is set to be ADC0 / PORTF0
@@ -115,6 +115,128 @@ int main(int argc, char *argv[]){
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 
+	while(1) {
+		if(SORT) {
+			bucket_psn = 0;
+			bucket_val = 0;
+			bucket_move = 0;
+
+			// if statements trying to handle int3 triggering with no link in queue
+			// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
+			// if (bucket_h) {
+
+			// Pull value from linked list head
+			bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
+
+			// Dequeue link after the reading have been extracted for the sorting algorithm
+			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
+
+			// Determine which type of material
+			if(bucket_val==1) {
+				bucket_psn=50;
+				Alum++;
+				// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+			} else if(bucket_val==2) {
+				bucket_psn=150;
+				Steel++;
+				// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+			} else if(bucket_val==3) {
+				bucket_psn=100;
+				White++;
+				// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+			} else if(bucket_val==4) {
+				bucket_psn=0;
+				Black++;
+				// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+			}
+
+			if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
+				// 200 steps per revolution -> 1.8 degrees per rev
+				bucket_move = bucket_psn - (CurPosition%200);
+				if(bucket_move == -50 || bucket_move == 150) {
+					stepccw(50);
+				} else if(bucket_move == 50 || bucket_move == -150){
+					stepcw(50);
+				} else if(abs(bucket_move) == 100){
+					stepcw(100);
+				}
+			}
+
+			// Bucket Stage - TESTING CODE _ ATHOME
+			// #region
+			
+			// LCDClear(); // TESTING CODE _ ATHOME
+			// LCDWriteStringXY(12,0, "BV:") // TESTING CODE _ ATHOME
+			// LCDWriteStringXY(0, 1, "BP:     CP:") // TESTING CODE _ ATHOME
+			// LCDWriteIntXY(12,0,bucket_val,4); // TESTING CODE _ ATHOME
+			// mTimer(1000); // TESTING CODE _ ATHOME
+			// LCDWriteIntXY(6,1,bucket_move,4); // TESTING CODE _ ATHOME
+			// mTimer(4000); // TESTING CODE _ ATHOME
+
+
+			// // Determine which type of material
+			// if(bucket_val==1) {
+			// 	LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
+			// 	bucket_psn=1536;
+			// 	Alum++;
+			// } else if(bucket_val==2) {
+			// 	LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
+			// 	bucket_psn=512;
+			// 	Steel++;
+			// } else if(bucket_val==3) {
+			// 	LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
+			// 	bucket_psn=1024;
+			// 	White++;
+			// } else if(bucket_val==4) {
+			// 	LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
+			// 	bucket_psn=0;
+			// 	Black++;
+			// }
+			// // mTimer(2000); // TESTING CODE _ ATHOME
+
+			// LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ ATHOME
+			
+			// // TESTING CODE _ ATHOME
+			// if (CurPosition < 0) {
+			// 	LCDWriteStringXY(11, 1, "-");
+			// } else {
+			// 	LCDWriteStringXY(11, 1, "+");
+			// }
+			// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+			// // end TESTING CODE _ ATHOME
+
+			// // TESTING CODE _ ATHOME
+			// if(CurPosition%2048 != bucket_psn) { // if bucket is not at correct stage
+			// 	// DC_Stop(); - moved to beginning of ISR3 for now
+			// 	// 200 steps per revolution -> 1.8 degrees per rev
+			// 	bucket_move = bucket_psn - (CurPosition%2048);
+			// 	if(bucket_move == -512 || bucket_move == 1536) {
+			// 		stepccw(512);
+			// 	} else if(bucket_move == 512 || bucket_move == -1536){
+			// 		stepcw(512);
+			// 	} else if(abs(bucket_move) == 1024){
+			// 		stepcw(1024);
+			// 	}
+			// } // CW/CCW might be backwards
+
+			// // TESTING CODE _ ATHOME
+			// if (CurPosition < 0) {
+			// 	LCDWriteStringXY(11, 1, "-");
+			// } else {
+			// 	LCDWriteStringXY(11, 1, "+");
+			// }
+			// LCDWriteIntXY(12, 1, abs(CurPosition), 4);
+			// // end TESTING CODE _ ATHOME
+
+			// end Bucket Stage - TESTING CODE _ ATHOME
+			// #endregion
+
+			SORT = 0;
+			DC_Start();
+
+		}
+	}
+
 	// Enter polling loop
 	STATE = 0;
 	goto POLLING_STAGE;
@@ -179,7 +301,7 @@ int main(int argc, char *argv[]){
 	// #region
 
 	// Description: 
-  
+  /*
 	BUCKET_STAGE:
 	bucket_psn = 0;
 	bucket_val = 0;
@@ -300,6 +422,8 @@ int main(int argc, char *argv[]){
 	STATE = 0; //Reset the state variable
 	DC_Start(); // Start the DC motor
 	goto POLLING_STAGE;
+
+	*/
 
 	// #endregion BUCKET STAGE ---------------------------------------------------------------------------//
 
