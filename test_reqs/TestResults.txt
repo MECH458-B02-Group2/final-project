@@ -115,4 +115,9 @@ Attempt 1
   TA do four-piece Test
   Everything worked as expected
 
-  
+  8 - Final Testing
+    The parts were missing the sort, so to solve it we:
+    - Added a 10 ms delay to after the DC stops,
+    - Changed the while mask to an if mask for the interrupt (whoops)
+    Ran all tests correctly, part sorting, pause, spaced parts, and ramp down. The last part for ramp down thought
+    a white was black but Kurt assumes its because the sensor reading was off and the part wasn't cleaned
