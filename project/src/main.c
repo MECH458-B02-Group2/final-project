@@ -161,15 +161,12 @@ int main(int argc, char *argv[]){
 			if(RAMPDOWN_TIMER == 500) {
 				cli();
 				LCDClear();
-				LCDWriteStringXY(0, 0, "Al");
+				LCDWriteStringXY(0, 0, "Al    St    Belt");
+				LCDWriteStringXY(0, 1, "Wh    Bl");
 				LCDWriteIntXY(3, 0, Alum, 2);
-				LCDWriteStringXY(6, 0, "St");
 				LCDWriteIntXY(9, 0, Steel, 2);
-				LCDWriteStringXY(0, 1, "Wh");
 				LCDWriteIntXY(3, 1, White, 2);
-				LCDWriteStringXY(6, 1, "Bl");
 				LCDWriteIntXY(9, 1, Black, 2);
-				LCDWriteStringXY(12, 0, "Belt");
 				LCDWriteIntXY(13, 1, (lq_size(&bucket_h, &reflect_t)), 2);
 				DC_Stop();
 				PORTA = 0b00000000; // Stepper de-energized

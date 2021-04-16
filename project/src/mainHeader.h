@@ -10,6 +10,7 @@ volatile int RAMPDOWN_FLAG;
 volatile int PolePosition;
 volatile int CurPosition;
 
+// Stepper acceleration curves
 //int accel[15] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7};
 //int decel[5]  = {8,10,13,17,20}; 
 int half[100] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,8,10,13,17,20};
@@ -42,7 +43,6 @@ volatile unsigned int bucket_move;
 // STEPPER MOTOR SUBROUTINES ---------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------//
 
-// void accel_curve(void);
 void step_home(void);
 void stepcw(int step);
 void stepccw(int step);
