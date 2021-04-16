@@ -1,3 +1,13 @@
+/* ##################################################################
+# SPRING 2021 FINAL PROJECT
+# PROJECT: MECH 458
+# GROUP: 2 (B02) 
+# NAME 1: Malaki, Vandas, V00844796
+# NAME 2: Raimund, Mullin, V00868338
+# DESC: CONTAINS SENSOR FUNCTIONALITY, STEPPER ACCELERATION, SORTING ABILITIES
+# FINALIZED: APRIL 16 2021
+################################################################### */
+
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <stdlib.h>
