@@ -82,7 +82,6 @@ int main(int argc, char *argv[]){
 	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
-	//accel_curve();
 	step_home(); // Working correctly as per TR3
 	
 	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
@@ -93,8 +92,7 @@ int main(int argc, char *argv[]){
 	DDRB = 0xFF; // Initialize port B for output to motor driver
 	PORTB = 0x00; //Initialize all pins to be low
 	PWM(); // Initialize PWM
-	// Start running the motor
-	PORTB = 0b00000111; // Motor running forward
+	PORTB = 0b00000111; // Start motor running forward
 
 // #endregion
 	
@@ -108,10 +106,6 @@ int main(int argc, char *argv[]){
 			bucket_psn = 0;
 			bucket_val = 0;
 			bucket_move = 0;
-
-			// if statements trying to handle int3 triggering with no link in queue
-			// if (lq_size(&bucket_h, &reflect_t) != 0) { // using size instead
-			// if (bucket_h) {
 
 			// Pull value from linked list head
 			bucket_val = bucket_h->reflect_val; // Store reflect_val in link element
@@ -201,15 +195,12 @@ int main(int argc, char *argv[]){
 			if(RAMPDOWN_TIMER == 500) {
 				cli();
 				LCDClear();
-				LCDWriteStringXY(0, 0, "Al");
+				LCDWriteStringXY(0, 0, "Al    St    Belt");
+				LCDWriteStringXY(0, 1, "Wh    Bl");
 				LCDWriteIntXY(3, 0, Alum, 2);
-				LCDWriteStringXY(6, 0, "St");
 				LCDWriteIntXY(9, 0, Steel, 2);
-				LCDWriteStringXY(0, 1, "Wh");
 				LCDWriteIntXY(3, 1, White, 2);
-				LCDWriteStringXY(6, 1, "Bl");
 				LCDWriteIntXY(9, 1, Black, 2);
-				LCDWriteStringXY(12, 0, "Belt");
 				LCDWriteIntXY(13, 1, (lq_size(&bucket_h, &reflect_t)), 2);
 				DC_Stop();
 				PORTA = 0b00000000; // Stepper de-energized
@@ -217,10 +208,7 @@ int main(int argc, char *argv[]){
 				return(0);
 			}
 		}
-	
 	}
-
-
 } // end main()
 
 /*------------------------------------------------------------------------------------------------------*/
@@ -257,19 +245,15 @@ void stepcw (int step) {
 		switch (PolePosition) {
 			case 1:
 			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
 			PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
 			PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
 			PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -280,7 +264,6 @@ void stepcw (int step) {
 			PolePosition++;
 		}
 
-		// ATHOME
 		if(step == 1){
 		mTimer(20); // TESTING CODE _ ATHOME
 		} else if(step == 512){
@@ -294,7 +277,7 @@ void stepcw (int step) {
 } // stepcw
 
 void stepccw (int step) {
-	// PolePosition--; // move the current position back one
+	PolePosition--; // move the current position back one
 	
 	for (int j=0; j<step; j++) {
 
@@ -305,19 +288,15 @@ void stepccw (int step) {
 		switch (PolePosition) {
 			case 1:
 			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
 			PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
 			PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
 			PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -328,7 +307,6 @@ void stepccw (int step) {
 			PolePosition--;
 		}
 
-		// ATHOME
 		if(step == 1){
 		mTimer(20); // TESTING CODE _ ATHOME
 		} else if(step == 512){
@@ -511,17 +489,14 @@ ISR(INT4_vect) {
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
 	LCDClear();
-	LCDWriteStringXY(0,0,"Al");
-	LCDWriteIntXY(3,0,Alum,2);
-	LCDWriteStringXY(6,0,"St");
-	LCDWriteIntXY(9,0,Steel,2);
-	LCDWriteStringXY(0,1,"Wh");
-	LCDWriteIntXY(3,1,White,2);
-	LCDWriteStringXY(6,1,"Bl");
-	LCDWriteIntXY(9,1,Black,2);
-	LCDWriteStringXY(12,0,"Belt");
-	LCDWriteIntXY(13,1,(lq_size(&bucket_h, &reflect_t)),2);
- 
+	LCDWriteStringXY(0, 0, "Al    St    Belt");
+	LCDWriteStringXY(0, 1, "Wh    Bl");
+	LCDWriteIntXY(3, 0, Alum, 2);
+	LCDWriteIntXY(9, 0, Steel, 2);
+	LCDWriteIntXY(3, 1, White, 2);
+	LCDWriteIntXY(9, 1, Black, 2);
+	LCDWriteIntXY(13, 1, (lq_size(&bucket_h, &reflect_t)), 2);
+
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
 	mTimer(100); // TESTING CODE _ ATHOME
 
