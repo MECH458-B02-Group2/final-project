@@ -85,11 +85,6 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	
-		LCDClear(); // TESTING CODE _ ATHOME
-		LCDWriteStringXY(0,0,"R FLAG"); // TESTING CODE _ ATHOME
-		LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME
-		mTimer(2000);
 
 // #endregion
 	
