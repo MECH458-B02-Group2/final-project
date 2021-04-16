@@ -90,21 +90,11 @@ int main(int argc, char *argv[]){
 		LCDWriteStringXY(0,0,"R FLAG"); // TESTING CODE _ ATHOME
 		LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME
 		mTimer(2000);
-	
-		stepccw(512); // TESTING CODE _ ATHOME
-		stepccw(1024); // TESTING CODE _ ATHOME
-		stepcw(512); // TESTING CODE _ ATHOME
-		stepcw(1024); // TESTING CODE _ ATHOME
+
 // #endregion
 	
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
-
-		stepccw(512); // TESTING CODE _ ATHOME
-		stepccw(1024); // TESTING CODE _ ATHOME
-		stepcw(512); // TESTING CODE _ ATHOME
-		stepcw(1024); // TESTING CODE _ ATHOME
-
 
 	while(1) {
 
