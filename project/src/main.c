@@ -72,6 +72,7 @@ int main(int argc, char *argv[]){
 	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
+	//accel_curve();
 	step_home(); // Working correctly as per TR3
 	
 	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	
+
 // #endregion
 	
 	// Enable all interrupts
@@ -108,6 +109,7 @@ int main(int argc, char *argv[]){
 			// Dequeue link after the reading have been extracted for the sorting algorithm
 			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
+			/*
 			// Determine which type of material
 			if(bucket_val==1) {
 				bucket_psn=50;
@@ -139,10 +141,12 @@ int main(int argc, char *argv[]){
 				}
 			}
 
+			*/
+
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
 			
-			/*
+			
 			LCDClear(); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
 			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
@@ -201,7 +205,7 @@ int main(int argc, char *argv[]){
 			}
 			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
 			// end TESTING CODE _ ATHOME
-			*/
+			
 
 			// end Bucket Stage - TESTING CODE _ ATHOME
 			// #endregion
@@ -242,7 +246,40 @@ int main(int argc, char *argv[]){
 /*------------------------------------------------------------------------------------------------------*/
 // #region 
 
+// Acceleration Curve Generator
+
+/*
+void accel_curve(void) {
+	int sq = sizeof(quarter);
+	int sh = sizeof(half);
+	int sa = sizeof(accel);
+	int sd = sizeof(decel);
+
+	for (int i=0; i<sq; i++) {
+		if(i<sa) {
+			quarter[i] = accel[i];
+		} else if(i>(sq-sd-1)) {
+			quarter[i] = decel[sq-i];
+		} else {
+			quarter[i] = min_accel;
+		}
+	} // for quarter
+
+	for (int i=0; i<sh; i++) {
+		if(i<sizeof(accel)) {
+			half[i] = accel[i];
+		} else if(i>(sh-sd-1)) {
+			half[i] = decel[sh-i];
+		} else {
+			half[i] = min_accel;
+		}
+	} // for half
+	
+} // Acceleration Curve
+*/
+
 //Homing function
+
 void step_home(void) {
 
 	PolePosition = 1; // set to 1 for either cw or ccw home
@@ -269,20 +306,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110110; // Dual Phase - 1 & 2
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00101110; // Dual Phase - 2 & 3
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101101; // Dual Phase - 3 & 4
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00110101; // Dual Phase - 4 & 1
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -292,15 +329,25 @@ void stepcw (int step) {
 		if (j<step-1) {
 			PolePosition++;
 		}
-		
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
+	/*
+		// ATLAB
+		if(step == 1){
+			mTimer(20);
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
+	*/
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
+
 		CurPosition++;
 	} // for
 } // stepcw
@@ -316,20 +363,20 @@ void stepccw (int step) {
 
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110110; // Dual Phase - 1 & 2
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00101110; // Dual Phase - 2 & 3
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101101; // Dual Phase - 3 & 4
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00110101; // Dual Phase - 4 & 1
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -339,17 +386,28 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
+	/*
+		// ATLAB
+		if(step == 1){
+			mTimer(20);
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
+	*/
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
 
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
 		CurPosition--;
 	} // for
+
 } // stepccw
 
 // #endregion
@@ -503,7 +561,7 @@ int lq_size(link **head, link **tail) {
 
 // Optical Sensor for Reflective Stage (OR)
 ISR(INT2_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
@@ -512,7 +570,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	// MASK the bit to see if it's lo
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	SORT = 1; // will goto BUCKET_STAGE
@@ -521,7 +579,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
@@ -538,13 +596,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(13,1,(lq_size(&bucket_h, &reflect_t)),2);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
@@ -556,7 +614,7 @@ ISR(INT4_vect) {
 
 /* PE5 = RampDown (Active Lo) */
 ISR(INT5_vect){
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	RAMPDOWN_FLAG = 1;
 } 
 
@@ -570,7 +628,7 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		// mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
+		mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
