@@ -17,7 +17,7 @@ int half[100] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,6,6,6,6,6,6,6
 int quarter[50] = {20,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,8,10,13,17,20};
 
 // DC Motor
-int const Speed = 0x60;
+int const Speed = 0x80;
 
 // Reflective Sensor Values
 volatile unsigned int Alum;

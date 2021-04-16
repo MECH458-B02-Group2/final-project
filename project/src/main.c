@@ -302,6 +302,7 @@ void DC_Start(void) {
 
 void DC_Stop(void) {
 	PORTB = 0x0F; // Brake high
+	mTimer(10);
 	return;
 } // Motor stop
 
@@ -442,7 +443,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	while((PIND & 0b00001000) == 0b00000000);
+	if((PIND & 0b00001000) == 0b00000000);
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	SORT = 1; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
@@ -494,21 +495,14 @@ ISR(ADC_vect) {
 		// Reflective Stage Linked Queue - enqueue new link each time a reflective reading is taken
 		initLink(&newLink);
 
-		LCDClear(); // TESTING CODE - ATHOME & ATLAB
-		LCDWriteIntXY(12,0,reflect_val,4); // TESTING CODE - ATHOME & ATLAB
-
 		if(Al_low <= reflect_val && reflect_val <= Al_high) {
 			newLink->reflect_val = 1;
-			LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(St_low <= reflect_val && reflect_val <= St_high) {
 			newLink->reflect_val = 2;
-			LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(Wh_low <= reflect_val && reflect_val <= Wh_high) {
 			newLink->reflect_val = 3;
-			LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME & ATLAB
 		} else if(Bl_low <= reflect_val && reflect_val <= Bl_high) {
 			newLink->reflect_val = 4;
-			LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME & ATLAB
 		}
 
 		enqueueLink(&bucket_h, &reflect_t, &newLink);
