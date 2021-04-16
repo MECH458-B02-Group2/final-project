@@ -600,16 +600,9 @@ ISR(ADC_vect) {
 
 ISR(BADISR_vect)
 {
-	// If an unexpected interrupt occurs (interrupt is enabled and no handler is installed,
-	// which usually indicates a bug), then the default action is to reset the device by jumping
-	// to the reset vector. You can override this by supplying a function named BADISR_vect which
-	// should be defined with ISR() as such. (The name BADISR_vect is actually an alias for __vector_default.
-	// The latter must be used inside assembly code in case <avr/interrupt.h> is not included.
-	// Write BADISR to LCD
 	LCDClear();
 	LCDWriteString("BADISR");
 	mTimer(2000);
-	// user code here
 }
 
 // #endregion
