@@ -119,49 +119,13 @@ int main(int argc, char *argv[]){
 			// Dequeue link after the reading have been extracted for the sorting algorithm
 			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
-			
-			// Determine which type of material
-			if(bucket_val==1) {
-				bucket_psn=50;
-				Alum++;
-				// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
-			} else if(bucket_val==2) {
-				bucket_psn=150;
-				Steel++;
-				// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
-			} else if(bucket_val==3) {
-				bucket_psn=100;
-				White++;
-				// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
-			} else if(bucket_val==4) {
-				bucket_psn=0;
-				Black++;
-				// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
-			}
-
-			if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
-				// 200 steps per revolution -> 1.8 degrees per rev
-				bucket_move = bucket_psn - (CurPosition%200);
-				if(bucket_move == -50 || bucket_move == 150) {
-					stepccw(50);
-				} else if(bucket_move == 50 || bucket_move == -150){
-					stepcw(50);
-				} else if(abs(bucket_move) == 100){
-					stepcw(100);
-				}
-			}
-
-			
-
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
 			
-			/*
 			LCDClear(); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(12,0, "BV:"); // TESTING CODE _ ATHOME
 			LCDWriteIntXY(15, 0, bucket_val, 1); // TESTING CODE _ ATHOME
 			LCDWriteStringXY(0, 1, "BP:     CP:"); // TESTING CODE _ ATHOME
-
 
 			// Determine which type of material
 			if(bucket_val==1) {
@@ -181,7 +145,7 @@ int main(int argc, char *argv[]){
 				bucket_psn=0;
 				Black++;
 			}
-			// mTimer(2000); // TESTING CODE _ ATHOME
+			mTimer(2000); // TESTING CODE _ ATHOME
 
 			LCDWriteIntXY(3, 1, bucket_psn, 4);  // TESTING CODE _ ATHOME
 			
@@ -215,7 +179,7 @@ int main(int argc, char *argv[]){
 			}
 			LCDWriteIntXY(12, 1, abs(CurPosition), 4);
 			// end TESTING CODE _ ATHOME
-			*/
+			
 
 			// end Bucket Stage - TESTING CODE _ ATHOME
 			// #endregion
@@ -292,20 +256,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110110; // Dual Phase - 1 & 2
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00101110; // Dual Phase - 2 & 3
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101101; // Dual Phase - 3 & 4
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00110101; // Dual Phase - 4 & 1
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -315,16 +279,7 @@ void stepcw (int step) {
 		if (j<step-1) {
 			PolePosition++;
 		}
-	
-		// ATLAB
-		if(step == 1){
-			mTimer(20);
-		} else if(step == 50){
-			mTimer(quarter[j]);
-		} else if(step == 100){
-			mTimer(half[j]);
-		} // Stepper acceleration and deceleration 
-	/*
+
 		// ATHOME
 		if(step == 1){
 		mTimer(20); // TESTING CODE _ ATHOME
@@ -333,7 +288,7 @@ void stepcw (int step) {
 		} else if(step == 1024){
 			mTimer(10);
 		} // Stepper acceleration and deceleration 
-	*/
+	
 		CurPosition++;
 	} // for
 } // stepcw
@@ -349,20 +304,20 @@ void stepccw (int step) {
 
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110110; // Dual Phase - 1 & 2
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00101110; // Dual Phase - 2 & 3
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101101; // Dual Phase - 3 & 4
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00110101; // Dual Phase - 4 & 1
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -372,16 +327,7 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
-	
-		// ATLAB
-		if(step == 1){
-			mTimer(20);
-		} else if(step == 50){
-			mTimer(quarter[j]);
-		} else if(step == 100){
-			mTimer(half[j]);
-		} // Stepper acceleration and deceleration 
-	/*
+
 		// ATHOME
 		if(step == 1){
 		mTimer(20); // TESTING CODE _ ATHOME
@@ -390,7 +336,7 @@ void stepccw (int step) {
 		} else if(step == 1024){
 			mTimer(10);
 		} // Stepper acceleration and deceleration 
-	*/
+	
 		CurPosition--;
 	} // for
 
@@ -409,9 +355,7 @@ void DC_Start(void) {
 } // Motor start
 
 void DC_Stop(void) {
-	PORTB = 0x0F; // Brake high - try not braking at all
-	//mTimer(10); // wait 10 ms - was mainly for direction change
-	//PORTB = 0x00; // Motor off
+	PORTB = 0x0F; // Brake high
 	return;
 } // Motor stop
 
@@ -425,8 +369,6 @@ void DC_Stop(void) {
 void PWM(void) {
 	TCCR0A|= _BV(WGM00); // Enable fast PWM
 	TCCR0A|= _BV(WGM01); // Enable fast PWM
-	
-	//TIMSK0|= _BV(OCIE0A); // Set output compare match A enable bit to 1 for timer 0
 	TCCR0A|= _BV(COM0A1); // Clear OC0A on compare match and set at bottom
 	OCR0A = Speed; // set ORC0A to 128 for a 50% duty cycle
 	return;
@@ -437,7 +379,6 @@ void mTimer(int count) {
 	TCCR1B |= _BV(WGM12); // Set CTC mode
 	OCR1A = 0x03e8; // Set output compare register to 1000 cycles = 1ms
 	TCNT1 = 0x0000; // Set initial value of timer counter
-	//TIMSK1 = TIMSK1 | 0b00000010; // (DO NOT) Enable the output compare interrupt enable
 	TIFR1 |= _BV(OCF1A); // Clear the timer interrupt flag and begin new timing
 	
 	// Poll the timer to determine when the timer has reached 0x03e8 (1000)
@@ -547,7 +488,7 @@ int lq_size(link **head, link **tail) {
 
 // Optical Sensor for Reflective Stage (OR)
 ISR(INT2_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	if((PIND & 0b00000100) == 0b00000100){
 		reflect_val = 0x400; // Start high - sensor is active low - 1024 is 2^10
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
@@ -556,7 +497,7 @@ ISR(INT2_vect){
 
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
-	// mTimer(100); // TESTING CODE - ATHOME
+	mTimer(100); // TESTING CODE - ATHOME
 	while((PIND & 0b00001000) == 0b00000000);
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	SORT = 1; // will goto BUCKET_STAGE
@@ -565,7 +506,7 @@ ISR(INT3_vect){
 // Pause button
 ISR(INT4_vect) {
 
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	LCDWriteStringXY(0, 0, "PAUSED"); // Output "PAUSE" to LCD
 	DC_Stop(); // Stop the DC Motor
@@ -582,13 +523,13 @@ ISR(INT4_vect) {
 	LCDWriteIntXY(13,1,(lq_size(&bucket_h, &reflect_t)),2);
  
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - pause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00010000); // Wait until button is pressed - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 
 	while((PINE & 0b00010000) == 0b00000000); // Wait until button is released - unpause
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	
 	DC_Start(); // Start the DC Motor
 
@@ -600,7 +541,7 @@ ISR(INT4_vect) {
 
 /* PE5 = RampDown (Active Lo) */
 ISR(INT5_vect){
-	// mTimer(100); // TESTING CODE _ ATHOME
+	mTimer(100); // TESTING CODE _ ATHOME
 	RAMPDOWN_FLAG = 1;
 } 
 
@@ -614,7 +555,7 @@ ISR(ADC_vect) {
 		ADCSRA |= _BV(ADSC); // Take another ADC reading
 	} else{
 
-		// mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
+		mTimer(100); // TESTING CODE - ATHOME (WARN: DEF REMOVE FOR ATLAB)
 
 		// Reflective Stage Linked Queue
 		// Enqueue new link each time a reflective reading is taken
