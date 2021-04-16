@@ -221,13 +221,21 @@ int main(int argc, char *argv[]){
 			RAMPDOWN_TIMER++;
 			mTimer(10); // Each count of RAMPDOWN_TIMER is 10ms
 			if(RAMPDOWN_TIMER == 500) {
+				cli();
 				LCDClear();
-				LCDWriteStringXY(6, 0, "RAMP");
-				LCDWriteStringXY(6, 1, "DOWN");
+				LCDWriteStringXY(0, 0, "Al");
+				LCDWriteIntXY(3, 0, Alum, 2);
+				LCDWriteStringXY(6, 0, "St");
+				LCDWriteIntXY(9, 0, Steel, 2);
+				LCDWriteStringXY(0, 1, "Wh");
+				LCDWriteIntXY(3, 1, White, 2);
+				LCDWriteStringXY(6, 1, "Bl");
+				LCDWriteIntXY(9, 1, Black, 2);
+				LCDWriteStringXY(12, 0, "Belt");
+				LCDWriteIntXY(13, 1, (lq_size(&bucket_h, &reflect_t)), 2);
 				DC_Stop();
-				PORTA = 0b00000000;
-				PORTB = 0b00000000;
-
+				PORTA = 0b00000000; // Stepper de-energized
+				PORTB = 0b00000000; // DC de-energized
 				return(0);
 			}
 		}
@@ -513,7 +521,7 @@ ISR(INT2_vect){
 // Optical Sensor for Bucket Stage (EX)
 ISR(INT3_vect){
 	// mTimer(100); // TESTING CODE - ATHOME
-	// MASK the bit to see if it's lo
+	while((PIND & 0b00001000) == 0b00000000);
 	DC_Stop(); // Stop DC motor as soon as interrupt is triggered
 	SORT = 1; // will goto BUCKET_STAGE
 } // PD3 = EX Sensor (Active Lo)
