@@ -72,6 +72,7 @@ int main(int argc, char *argv[]){
 	DDRE = 0b00000000; // PE4 & PE5 as input for interrupt buttons (pause and ramp-down)
 	
 	// Stepper Motor
+	//accel_curve();
 	step_home(); // Working correctly as per TR3
 	
 	LCDClear(); // TESTING CODE _ ATHOME & ATLAB
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]){
 	PWM(); // Initialize PWM
 	// Start running the motor
 	PORTB = 0b00000111; // Motor running forward
-	
+
 // #endregion
 	
 	// Enable all interrupts
@@ -108,6 +109,7 @@ int main(int argc, char *argv[]){
 			// Dequeue link after the reading have been extracted for the sorting algorithm
 			dequeueLink(&bucket_h, &reflect_t); // Dequeue the link pointed to by the head (bucket_h)
 
+			
 			// Determine which type of material
 			if(bucket_val==1) {
 				bucket_psn=50;
@@ -138,6 +140,8 @@ int main(int argc, char *argv[]){
 					stepcw(100);
 				}
 			}
+
+			
 
 			// Sorting Stage - TESTING CODE _ ATHOME
 			// #region
@@ -251,6 +255,7 @@ int main(int argc, char *argv[]){
 // #region 
 
 //Homing function
+
 void step_home(void) {
 
 	PolePosition = 1; // set to 1 for either cw or ccw home
@@ -277,20 +282,20 @@ void stepcw (int step) {
 		
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -300,15 +305,25 @@ void stepcw (int step) {
 		if (j<step-1) {
 			PolePosition++;
 		}
-		
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
+	
+		// ATLAB
+		if(step == 1){
+			mTimer(20);
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
+	/*
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
+	*/
 		CurPosition++;
 	} // for
 } // stepcw
@@ -324,20 +339,20 @@ void stepccw (int step) {
 
 		switch (PolePosition) {
 			case 1:
-			// PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110000;
+			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
-			// PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00000110;
+			PORTA = 0b00000100; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
-			// PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101000;
+			PORTA = 0b00000010; // TESTING CODE _ ATHOME
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
-			// PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00000101;
+			PORTA = 0b00000001; // TESTING CODE _ ATHOME
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
@@ -347,17 +362,28 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
-
-		//if(step == 1){
-		// mTimer(5); // TESTING CODE _ ATHOME
-		mTimer(20); // TESTING CODE _ ATLAB
-		//} else if(step == 50){
-		//	mTimer(fifty[j]);
-		//} else if(step == 100){
-		//	mTimer(onehundred[j]);
-		//} // Stepper acceleration and deceleration 
+	
+		// ATLAB
+		if(step == 1){
+			mTimer(20);
+		} else if(step == 50){
+			mTimer(quarter[j]);
+		} else if(step == 100){
+			mTimer(half[j]);
+		} // Stepper acceleration and deceleration 
+	/*
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
+	*/
 		CurPosition--;
 	} // for
+
 } // stepccw
 
 // #endregion
