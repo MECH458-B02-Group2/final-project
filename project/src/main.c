@@ -369,19 +369,19 @@ void stepccw (int step) {
 		switch (PolePosition) {
 			case 1:
 			PORTA = 0b00001000 ; // TESTING CODE _ ATHOME
-			PORTA = 0b00110110; // Dual Phase - 1 & 2
+			// PORTA = 0b00110110; // Dual Phase - 1 & 2
 			break;
 			case 2:
 			PORTA = 0b00000100; // TESTING CODE _ ATHOME
-			PORTA = 0b00101110; // Dual Phase - 2 & 3
+			// PORTA = 0b00101110; // Dual Phase - 2 & 3
 			break;
 			case 3:
 			PORTA = 0b00000010; // TESTING CODE _ ATHOME
-			PORTA = 0b00101101; // Dual Phase - 3 & 4
+			// PORTA = 0b00101101; // Dual Phase - 3 & 4
 			break;
 			case 4:
 			PORTA = 0b00000001; // TESTING CODE _ ATHOME
-			PORTA = 0b00110101; // Dual Phase - 4 & 1
+			// PORTA = 0b00110101; // Dual Phase - 4 & 1
 			break;
 			default:
 			PORTA = 0;
