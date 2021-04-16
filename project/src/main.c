@@ -91,19 +91,19 @@ int main(int argc, char *argv[]){
 		LCDWriteIntXY(9,0,RAMPDOWN_FLAG,1); // TESTING CODE _ ATHOME
 		mTimer(2000);
 	
-		stepccw(50); // TESTING CODE _ ATHOME
-		stepccw(100); // TESTING CODE _ ATHOME
-		stepcw(50); // TESTING CODE _ ATHOME
-		stepcw(50); // TESTING CODE _ ATHOME
+		stepccw(512); // TESTING CODE _ ATHOME
+		stepccw(1024); // TESTING CODE _ ATHOME
+		stepcw(512); // TESTING CODE _ ATHOME
+		stepcw(1024); // TESTING CODE _ ATHOME
 // #endregion
 	
 	// Enable all interrupts
 	sei();	// Note this sets the Global Enable for all interrupts
 
-		stepccw(50); // TESTING CODE _ ATHOME
-		stepccw(100); // TESTING CODE _ ATHOME
-		stepcw(50); // TESTING CODE _ ATHOME
-		stepcw(50); // TESTING CODE _ ATHOME
+		stepccw(512); // TESTING CODE _ ATHOME
+		stepccw(1024); // TESTING CODE _ ATHOME
+		stepcw(512); // TESTING CODE _ ATHOME
+		stepcw(1024); // TESTING CODE _ ATHOME
 
 
 	while(1) {
@@ -344,15 +344,25 @@ void stepcw (int step) {
 		if (j<step-1) {
 			PolePosition++;
 		}
-	
+	/*
+		// ATLAB
 		if(step == 1){
-		mTimer(5); // TESTING CODE _ ATHOME
-		// mTimer(20); // TESTING CODE _ ATLAB
+			mTimer(20);
 		} else if(step == 50){
 			mTimer(quarter[j]);
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
+	*/
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
+
 		CurPosition++;
 	} // for
 } // stepcw
@@ -391,15 +401,25 @@ void stepccw (int step) {
 		if (j<step-1) {
 			PolePosition--;
 		}
-
+	/*
+		// ATLAB
 		if(step == 1){
-		mTimer(5); // TESTING CODE _ ATHOME
-		// mTimer(20); // TESTING CODE _ ATLAB
+			mTimer(20);
 		} else if(step == 50){
 			mTimer(quarter[j]);
 		} else if(step == 100){
 			mTimer(half[j]);
 		} // Stepper acceleration and deceleration 
+	*/
+		// ATHOME
+		if(step == 1){
+		mTimer(20); // TESTING CODE _ ATHOME
+		} else if(step == 512){
+			mTimer(5);
+		} else if(step == 1024){
+			mTimer(10);
+		} // Stepper acceleration and deceleration 
+
 		CurPosition--;
 	} // for
 
