@@ -117,19 +117,15 @@ int main(int argc, char *argv[]){
 			if(bucket_val==1) {
 				bucket_psn=50;
 				Alum++;
-				// LCDWriteStringXY(0,0,"ALUMINUM"); // TESTING CODE _ ATHOME
 			} else if(bucket_val==2) {
 				bucket_psn=150;
 				Steel++;
-				// LCDWriteStringXY(0,0,"STEEL"); // TESTING CODE _ ATHOME
 			} else if(bucket_val==3) {
 				bucket_psn=100;
 				White++;
-				// LCDWriteStringXY(0,0,"WHITE"); // TESTING CODE _ ATHOME
 			} else if(bucket_val==4) {
 				bucket_psn=0;
 				Black++;
-				// LCDWriteStringXY(0,0,"BLACK"); // TESTING CODE _ ATHOME
 			}
 
 			if(CurPosition%200 != bucket_psn) { // if bucket is not at correct stage
